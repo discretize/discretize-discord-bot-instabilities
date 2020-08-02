@@ -1,17 +1,29 @@
+
 {
-  "name": "Example",
-  "description": "Example",
-  "version": "0.0.0",
-  "main": "bot.js",
-  "scripts": {
-    "start": "node bot.js"
-  },
-  "dependencies": {
-    "discord.js": "11.1.0",
-    "request": "2.81.0"
-  },
-    "engines": {
+  "name": "discord.js-heroku",
+  "version": "1.0.0",
+  "description": "An in-depth guide on deploying your Discord.js bot on Heroku",
+  "main": "index.js",
+  "engines": {
     "node": "10.x",
     "npm": "*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SpatiumPrinceps/Instability-Discord-Bot/"
+  },
+  "keywords": [
+    "heroku",
+    "discord.js"
+  ],
+  "author": "SpatiumPrinceps",
+  "license": "MIT",
+  "homepage": "https://github.com/synicalsyntax/discord.js-heroku#readme",
+  "dependencies": {
+    "discord.js": "^11.3.0"
   }
 }

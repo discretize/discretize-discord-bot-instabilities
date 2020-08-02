@@ -23,6 +23,7 @@
   "license": "MIT",
   "homepage": "https://github.com/synicalsyntax/discord.js-heroku#readme",
   "dependencies": {
+    "csv-parser": "^2.3.3",
     "discord.js": "^11.3.0"
   }
 }

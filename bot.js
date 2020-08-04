@@ -3,7 +3,7 @@ const client = new Discord.Client();
 const csv = require('csv-parser')
 const fs = require('fs')
 const results = [];
-const cron = require('cron');
+var CronJob = require('cron').CronJob;
 
 const instabDict = {     
     1: 'Adrenaline Rush',    
@@ -55,9 +55,10 @@ client.on('ready', () => {
 });
 
 client.on('ready', () => {
-    cron.CronJob('0 30 12 * * *', () => {
+    var job = new CronJob('0 1 2 * * *', () => {
       sendMessage();
-    });
+    }, null, true, 'Europe/Berlin');
+    job.start();
 })
 
 function generateClipboardText(node) {

@@ -3,6 +3,7 @@ const client = new Discord.Client();
 const csv = require('csv-parser')
 const fs = require('fs')
 const results = [];
+const cron = require('cron');
 
 const instabDict = {     
     1: 'Adrenaline Rush',    
@@ -54,13 +55,9 @@ client.on('ready', () => {
 });
 
 client.on('ready', () => {
-    setTimeout(function(){ 
-        sendMessage(); 
-        var dayMillseconds = 1000 * 60 * 60 * 24;
-        setInterval(function(){
-            sendMessage();
-        }, dayMillseconds)
-    }, leftToEight())
+    cron.CronJob('0 24 12 * * *', () => {
+      sendMessage();
+    });
 })
 
 function leftToEight(){

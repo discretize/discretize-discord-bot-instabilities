@@ -55,15 +55,10 @@ client.on('ready', () => {
 });
 
 client.on('ready', () => {
-    cron.CronJob('0 24 12 * * *', () => {
+    cron.CronJob('0 26 12 * * *', () => {
       sendMessage();
     });
 })
-
-function leftToEight(){
-    var d = new Date();
-    return (-d + d.setHours(2,0,0,0));
-}
 
 function generateClipboardText(node) {
     let str = `__Instabilities on ${node.Date}:__\n**99CM**: 99cmi\n**100CM**: 100cmi\n**name1**: df1\n**name2**: df2\n**name3**: df3`;

@@ -55,7 +55,7 @@ client.on('ready', () => {
 });
 
 client.on('ready', () => {
-    cron.CronJob('0 26 12 * * *', () => {
+    cron.CronJob('0 30 12 * * *', () => {
       sendMessage();
     });
 })

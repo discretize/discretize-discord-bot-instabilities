@@ -108,9 +108,9 @@ function generateClipboardText(node) {
   }
   
 
-function getFromFile(channel){
+function sendFromFile(channel, offset){
     const m = new Date().getMonth() + 1;
-    const d = new Date().getDate();
+    const d = new Date().getDate() + offset;
 
     fs.createReadStream('instabs.csv')
         .pipe(csv())
@@ -134,7 +134,7 @@ function sendMessage(){
     client.guilds.forEach(guild => {
         guild.channels.forEach(element => {
             if(element.name === "instabilities"){
-                getFromFile(element);
+              sendFromFile(element, 0);
             }
         });
     })
@@ -142,8 +142,10 @@ function sendMessage(){
 
 client.on('message', message => {
 	 if (message.content === '!today'){
-     getFromFile(message.channel);
-   }
+    sendFromFile(message.channel, 0);
+   }else if (message.content === '!tomorrow'){
+    sendFromFile(message.channel, 1);
+  }
 });
 
 client.login('NTAyMDk3MTc1NTgxNTU2NzM2.W8csbw.2km34ZuC4IBKruuZM0Q7an9O8Bo');

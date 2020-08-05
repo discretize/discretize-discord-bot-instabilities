@@ -125,18 +125,15 @@ function sendFromFile(channel, offset){
         .pipe(csv())
         .on('data', (data) => results.push(data))
         .on('end', () => {
-
-        results.forEach(node => {
             if (
                 parseInt(m, 10) ===
-                parseInt(node.Date.split('-')[1], 10) &&
+                parseInt(results[0].Date.split('-')[1], 10) &&
                 parseInt(d, 10) ===
-                parseInt(node.Date.split('-')[0], 10)
+                parseInt(results[0].Date.split('-')[0], 10)
             ) {
-                channel.send(generateClipboardText(node));
+                channel.send(generateClipboardText(results[0]));
             }
-        });
-});
+          });
 }
 
 function sendMessage(){

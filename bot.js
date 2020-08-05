@@ -140,4 +140,10 @@ function sendMessage(){
     })
 }
 
+client.on('message', message => {
+	 if (message.content === '!today'){
+     getFromFile(message.channel);
+   }
+});
+
 client.login('NTAyMDk3MTc1NTgxNTU2NzM2.W8csbw.2km34ZuC4IBKruuZM0Q7an9O8Bo');

@@ -90,8 +90,8 @@ function generateClipboardText(node) {
   
     function replaceUndefined(string) {
       return string.replace(
-        '**undefined**: undefined - undefined - undefined\n',
-        '',
+        ': undefined - undefined - undefined\n',
+        ': daily\n',
       );
     }
   
@@ -142,9 +142,11 @@ function sendMessage(){
 
 client.on('message', message => {
 	 if (message.content === '!today'){
-    sendFromFile(message.channel, 0);
+      console.log("Today asked by " + message.author.tag);
+      sendFromFile(message.channel, 0);
    }else if (message.content === '!tomorrow'){
-    sendFromFile(message.channel, 1);
+    console.log("Tomorrow asked by " + message.author.tag);
+      sendFromFile(message.channel, 1);
   }
 });
 

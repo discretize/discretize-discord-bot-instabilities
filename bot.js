@@ -89,10 +89,19 @@ function generateClipboardText(node) {
     }
   
     function replaceUndefined(string) {
-      return string.replace(
-        ': undefined - undefined - undefined\n',
-        ': daily\n',
+     let tmpStr =  string.replace(
+        '**undefined**: undefined - undefined - undefined',
+        '',
       );
+      tmpStr =  tmpStr.replace(
+        '**Nightmare**: undefined - undefined - undefined',
+        '',
+      );
+      tmpStr =  tmpStr.replace(
+        '**Shattered Observatory**: undefined - undefined - undefined',
+        '',
+      );
+      return tmpStr;
     }
   
     str = str.replace('99cmi', strToI(node.CM1));

@@ -171,13 +171,16 @@ function sendFromFile(channel, offset) {
 }
 
 function sendMessage() {
-  client.guilds.forEach((guild) => {
-    guild.channels.forEach((element) => {
+  let guildOutput = "";
+  client.guilds.cache.forEach((guild) => {
+    guildOutput = guildOutput + (guild.name + ", ");
+    guild.channels.cache.forEach((element) => {
       if (element.name === "instabilities") {
         sendFromFile(element, 0);
       }
     });
   });
+  console.log("Notified: " + guildOutput);
 }
 
 client.on("message", (message) => {

@@ -159,6 +159,7 @@ function sendFromFile(channel, offset) {
   const d = new Date().getDate() + offset;
 
   results.forEach((node) => {
+    if (node.Date === undefined) continue;
     if (
       parseInt(m, 10) === parseInt(node.Date.split("-")[1], 10) &&
       parseInt(d, 10) === parseInt(node.Date.split("-")[0], 10)

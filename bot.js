@@ -46,6 +46,7 @@ const fractalDict = {
   R: "Underground Facility",
   S: "Urban Battleground",
   T: "Volcanic",
+  U: "Sunqua Peak",
 };
 
 client.on("ready", () => {
@@ -74,6 +75,10 @@ function nToI(n) {
   return instabDict[parseInt(n, 10)];
 }
 
+function nToF(n) {
+  return fractalDict[parseInt(n, 10)];
+}
+
 function strToI(instabString) {
   let splitFrac1 = instabString.split(",");
   let splitFrac2;
@@ -95,7 +100,7 @@ function strToI(instabString) {
 }
 
 function generateClipboardText(node) {
-  let str = `__Instabilities on ${node.Date}:__\n**99CM**: 99cmi\n**100CM**: 100cmi\n**name1**: df1\n**name2**: df2\n**name3**: df3`;
+  let str = `__Instabilities on ${node.Date}:__\n**98CM**: 98cmi\n**99CM**: 99cmi\n**100CM**: 100cmi\n**name1**: df1\n**name2**: df2\n**name3**: df3`;
 
   function replaceUndefined(string) {
     let tmpStr = string.replace(
@@ -110,11 +115,16 @@ function generateClipboardText(node) {
       "**Shattered Observatory**: undefined - undefined - undefined",
       ""
     );
+    tmpStr = tmpStr.replace(
+      "**Sunqua Peak**: undefined - undefined - undefined",
+      ""
+    );
     return tmpStr;
   }
 
-  str = str.replace("99cmi", strToI(node.CM1));
-  str = str.replace("100cmi", strToI(node.CM2));
+  str = str.replace("98cmi", strToI(node.CM1));
+  str = str.replace("99cmi", strToI(node.CM2));
+  str = str.replace("100cmi", strToI(node.CM3));
   str = str.replace("name1", fractalDict[node.DF1.charAt(0)]);
   str = str.replace("df1", strToI(node.DF1));
   str = str.replace("name2", fractalDict[node.DF2.charAt(0)]);
@@ -127,7 +137,7 @@ function generateClipboardText(node) {
 
 function generateEmbed(node) {
   function isCM(df) {
-    return df.charAt(0) === "I" || df.charAt(0) === "J";
+    return df.charAt(0) === "I" || df.charAt(0) === "J" || df.charAt(0) === "U";
   }
   const embed = new Discord.MessageEmbed()
     .setColor("#ff33cc")
@@ -137,20 +147,23 @@ function generateEmbed(node) {
       "https://wiki.guildwars2.com/images/f/f6/Cracked_Fractal_Encryption.png"
     )
     .addFields(
+      { name: "Sunqua Peak", value: strToI(node.CM3) },
       { name: "Shattered Observatory", value: strToI(node.CM2) },
       { name: "Nightmare", value: strToI(node.CM1) }
     )
     .setTimestamp();
 
+  /*
   if (!isCM(node.DF1)) {
-    embed.addField(fractalDict[node.DF1.charAt(0)], strToI(node.DF1));
+    embed.addField(nToF(node.DF1.charAt(0)), strToI(node.DF1));
   }
   if (!isCM(node.DF2)) {
-    embed.addField(fractalDict[node.DF2.charAt(0)], strToI(node.DF2));
+    embed.addField(nToF(node.DF2.charAt(0)), strToI(node.DF2));
   }
   if (!isCM(node.DF3)) {
-    embed.addField(fractalDict[node.DF3.charAt(0)], strToI(node.DF3));
+    embed.addField(nToF(node.DF3.charAt(0)), strToI(node.DF3));
   }
+  */
   return embed;
 }
 

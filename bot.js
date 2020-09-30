@@ -23,6 +23,7 @@ const instabDict = {
   15: "Toxic Trail",
   16: "Vengeance",
   17: "We Bleed Fire",
+  18: "Toxic Sickness",
 };
 
 const fractalDict = {
@@ -76,7 +77,7 @@ function nToI(n) {
 }
 
 function nToF(n) {
-  return fractalDict[parseInt(n, 10)];
+  return fractalDict[n];
 }
 
 function strToI(instabString) {
@@ -153,7 +154,6 @@ function generateEmbed(node) {
     )
     .setTimestamp();
 
-  /*
   if (!isCM(node.DF1)) {
     embed.addField(nToF(node.DF1.charAt(0)), strToI(node.DF1));
   }
@@ -163,7 +163,7 @@ function generateEmbed(node) {
   if (!isCM(node.DF3)) {
     embed.addField(nToF(node.DF3.charAt(0)), strToI(node.DF3));
   }
-  */
+
   return embed;
 }
 

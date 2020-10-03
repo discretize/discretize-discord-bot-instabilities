@@ -7,7 +7,49 @@ function toPercentile(num) {
     return (num * 100).toFixed(1) + "%ile";
 }
 
-exports.sendPercentileEmbed = function (Discord, channel, party, member, permalink) {
+exports.getPersonPercentileEmbed = function (Discord, acc, result) {
+    const embed = new Discord.MessageEmbed()
+        .setColor("#43ff00")
+        .setTitle("Percentiles for " + acc)
+        .setURL("https://discretize.eu")
+        .setThumbnail(
+            "https://discretize.eu/logo.png"
+        )
+        .setTimestamp();
+
+    let map = new Map;
+    result.forEach((elem) => {
+        if (map[elem.spec] === undefined) {
+            map[elem.spec] = [];
+        }
+        map[elem.spec].push(elem);
+    })
+
+    let desc = ""
+    for (const key in map) {
+        desc += key + "\n";
+        var t = new Table;
+        map[key].forEach((boss) => {
+            t.newRow();
+            t.cell("Boss:", mappings.bosses[boss.boss_id]);
+            t.cell("50%ile", humanFormat(boss.T50));
+            t.cell("90%ile", humanFormat(boss.T90));
+            t.cell("99%ile", humanFormat(boss.T99));
+            t.newRow();
+            t.cell("50%ile", humanFormat(boss.C50));
+            t.cell("90%ile", humanFormat(boss.C90));
+            t.cell("99%ile", humanFormat(boss.C99));
+            t.newRow();
+        })
+        desc += "``` " + t.toString() + "```"
+        desc += "\n";
+    }
+    embed.setDescription(desc)
+
+    return embed;
+}
+
+exports.getPercentileEmbed = function (Discord, party, member, permalink) {
 
     const embed = new Discord.MessageEmbed()
         .setColor("#43ff00")
@@ -38,6 +80,5 @@ exports.sendPercentileEmbed = function (Discord, channel, party, member, permali
     desc += "```" + t.toString() + "```";
 
     embed.setDescription(desc);
-
-    channel.send(embed);
+    return embed;
 }

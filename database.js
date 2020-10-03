@@ -117,10 +117,38 @@ exports.partyPercentile = function (permalink, callback) {
     });
 }
 
+exports.personPercentile = function (acc, callback) {
+    const sql = `SELECT distinct spec,
+                                boss_id,
+                                PERCENTILE_CONT(0.5) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec)  as T50,
+                                PERCENTILE_CONT(0.9) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec)  as T90,
+                                PERCENTILE_CONT(0.99) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec) as T99,
+                                PERCENTILE_CONT(0.5) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec)  as C50,
+                                PERCENTILE_CONT(0.9) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec)  as C90,
+                                PERCENTILE_CONT(0.99) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec) as C99
+                    FROM player_kill
+                         join player_character pc on pc.id = player_kill.character_id
+                         join player p on p.id = pc.player_id
+                         join group_kill gk on gk.id = player_kill.groupkill_id
+                    WHERE p.acc = '${acc}'
+                    ORDER BY spec`
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        callback(result);
+    });
+}
+
 exports.verify = function (acc, discord) {
     const sql = `INSERT INTO player (acc, discord, verified) VALUES ('${acc}', '${discord}', "1" ) ON DUPLICATE KEY UPDATE verified = '1'`
     connection.query(sql, function (err, result) {
         if (err) throw err;
+    });
+}
 
+exports.isVerified = function (discord, callback) {
+    const sql = `SELECT acc, verified FROM player WHERE discord='${discord}'`
+    connection.query(sql, function (err, result) {
+        if (err) throw err;
+        callback(result);
     });
 }

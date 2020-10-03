@@ -47,7 +47,7 @@ client.on("message", (message) => {
         message.channel.send("```**HELP MENU** - Discretize [dT] bot \n \
 - !today - shows todays instabilities\n \
 - !tomorrow - shows tomorrows instabilities\n \
-- !upload <dps.report link> - uploads a log\n \
+- !upload <optional: categories> <dps.report link> - uploads a log\n \
 - !percentiles <dps.report link> - shows percentiles for a log\n \
 - !verify <api-key> - api-key must be named dtlogbot \n \
 - !addcategory <dps.report link> - adds categories to logs to filter\
@@ -82,17 +82,33 @@ client.on("message", (message) => {
             }
         });
     } else if (message.content.startsWith("!percentile")) {
-        const urls = getUrls(message.content);
-        urls.forEach((value) => {
-            if (value.startsWith("https://dps.report/")) {
-                let permalink = value.substr(19);
-                db.partyPercentile(permalink, function (party, members) {
-                    processLog.sendPercentileEmbed(Discord, message.channel, party, members, permalink);
-                });
-            } else {
-                message.channel.send("Message is not a valid dps.report link: " + value);
-            }
-        });
+        if (message.content.split(" ").length > 1) {
+            const urls = getUrls(message.content);
+            urls.forEach((value) => {
+                if (value.startsWith("https://dps.report/")) {
+                    let permalink = value.substr(19);
+                    db.partyPercentile(permalink, function (party, members) {
+                        let embed = processLog.getPercentileEmbed(Discord, party, members, permalink);
+                        message.channel.send(embed);
+                    });
+                } else {
+                    message.channel.send("Message is not a valid dps.report link: " + value);
+                }
+            });
+        } else {
+            // give info about personal percentages for verified users
+            db.isVerified(message.author.tag, function (result) {
+                if (result.length === 1) {
+                    if (result[0].verified) {
+                        db.personPercentile(result[0].acc, function (res2) {
+                            message.channel.send(processLog.getPersonPercentileEmbed(Discord, result[0].acc, res2));
+                        });
+                    }
+                } else {
+                    message.channel.send("Your account is not verified yet! Use !verify <api key>!")
+                }
+            });
+        }
     } else if (message.content.startsWith("!addcategory")) {
         const urls = getUrls(message.content);
         const categories = getCategories(message.content);

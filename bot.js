@@ -43,12 +43,14 @@ client.on("message", (message) => {
     } else if (message.content === "!tomorrow") {
         console.log("Tomorrow asked by " + message.author.tag);
         instab.sendFromFile(Discord, results, message.channel, 1);
-    } else if (message.content === "!help"){
+    } else if (message.content === "!help") {
         message.channel.send("```**HELP MENU** - Discretize [dT] bot \n \
 - !today - shows todays instabilities\n \
 - !tomorrow - shows tomorrows instabilities\n \
 - !upload <dps.report link> - uploads a log\n \
 - !percentiles <dps.report link> - shows percentiles for a log\n \
+- !verify <api-key> - api-key must be named dtlogbot \n \
+- !addcategory <dps.report link> - adds categories to logs to filter\
         ```");
     }
 });
@@ -59,6 +61,8 @@ db.connect();
 client.on("message", (message) => {
     if (message.content.startsWith("!upload")) {
         const urls = getUrls(message.content);
+        const categories = getCategories(message.content);
+
         urls.forEach((value) => {
             if (value.startsWith("https://dps.report/")) {
                 let permalink = value.substr(19);
@@ -67,8 +71,14 @@ client.on("message", (message) => {
                     if (err) {
                         return console.log(err);
                     }
-                    processLog.processLog(db, body, permalink);
+                    db.insertLog(body, permalink);
+                    categories.forEach((cat) => {
+                        db.addCategory(permalink, cat);
+                    });
+                    message.react("👍");
                 });
+            } else {
+                message.channel.send("Message is not a valid dps.report link: " + value);
             }
         });
     } else if (message.content.startsWith("!percentile")) {
@@ -79,7 +89,58 @@ client.on("message", (message) => {
                 db.partyPercentile(permalink, function (party, members) {
                     processLog.sendPercentileEmbed(Discord, message.channel, party, members, permalink);
                 });
+            } else {
+                message.channel.send("Message is not a valid dps.report link: " + value);
+            }
+        });
+    } else if (message.content.startsWith("!addcategory")) {
+        const urls = getUrls(message.content);
+        const categories = getCategories(message.content);
+        urls.forEach((value) => {
+            if (value.startsWith("https://dps.report/")) {
+                let permalink = value.substr(19);
+                categories.forEach((cat) => {
+                    db.addCategory(permalink, cat);
+                })
+                message.react("👍");
+            } else {
+                message.channel.send("Message is not a valid dps.report link: " + value);
+            }
+        });
+    } else if (message.content.startsWith("!verify")) {
+        const split = message.content.split(" ");
+        if (split.length === 1) {
+            message.channel.send("Invalid API Key");
+            return;
+        }
+        const api = message.content.split(" ")[1];
+
+        request("https://api.guildwars2.com/v2/tokeninfo?access_token=" + api, {json: true}, (err, res, body) => {
+            if (body.name === 'dtlogbot') {
+                request("https://api.guildwars2.com/v2/account?access_token=" + api, {json: true}, (err, res, body2) => {
+                    db.verify(body2.name, message.author.tag)
+                    message.react("👍");
+                });
+            } else {
+                message.channel.send("Invalid API-Key name! It must be named 'dtlogbot' not " + body.name);
             }
         });
     }
 })
+
+function getCategories(cnt) {
+    let categories = [];
+    const split = cnt.split(" ");
+    if (split.length === 1) {
+        return categories;
+    }
+    let i = 1;
+    while (true) {
+        if (split[i].startsWith("https://")) {
+            break;
+        }
+        categories.push(split[i]);
+        i++;
+    }
+    return categories;
+}

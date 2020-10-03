@@ -20,7 +20,6 @@ exports.connect = function () {
 
 exports.insertPlayer = function (acc, name, spec) {
     const sql = "INSERT INTO player SET acc = '" + acc + "', name = '" + name + "', spec = '" + spec + "' ON DUPLICATE KEY UPDATE acc=acc";
-    const sql1 = "INSERT INTO player (acc, name, spec) VALUES( '" + acc + "', '" + name + "', '" + spec + "' )";
     connection.query(sql, function (err, result) {
         if (err) throw err;
     });
@@ -30,7 +29,6 @@ exports.insertGroupKill = function (boss_id, date, timer, dps_cleave, dps_target
     const sql = "INSERT IGNORE INTO group_kill SET boss_id = '" + boss_id + "', date = '" + date + "', timer = '" + timer + "', dps_cleave = '" + dps_cleave + "', dps_target = '" + dps_target + "', permalink = '" + permalink + "'";
     connection.query(sql, function (err, result) {
         if (err) throw err;
-        return result.insertId;
     });
 }
 
@@ -78,14 +76,9 @@ exports.partyPercentile = function (permalink, callback) {
         if (err) throw err;
         connection.query(sqlMembers, function (err, result2) {
             if (err) throw err;
-            callback(JSON.parse(JSON.stringify(result[0])), JSON.parse(JSON.stringify(result2)));
+            if (result.length > 0) {
+                callback(JSON.parse(JSON.stringify(result[0])), JSON.parse(JSON.stringify(result2)));
+            }
         });
-    });
-}
-
-exports.exec = function (query) {
-    connection.query(query, function (err, result) {
-        if (err) throw err;
-        return result;
     });
 }

@@ -5,6 +5,9 @@ const prettyMilliseconds = require('pretty-ms');
 
 exports.processLog = function (db, json, permalink) {
 
+    if (!json.success && json.triggerID !== 23254) {
+        return;
+    }
     const date = json.timeStart;
     const boss_id = json.triggerID;
     const timer = json.phases[0].end;
@@ -46,7 +49,6 @@ exports.sendPercentileEmbed = function (Discord, channel, party, member, permali
         .setThumbnail(
             "https://discretize.eu/logo.png"
         )
-        .setImage("https://wiki.guildwars2.com/images/1/18/Superior_Rune_of_the_Monk.png")
         .setTimestamp();
 
     var t = new Table;

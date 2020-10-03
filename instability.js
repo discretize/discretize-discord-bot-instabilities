@@ -77,13 +77,13 @@ exports.sendFromFile = function(Discord, results, channel, offset) {
     });
 }
 
-exports.sendMessage = function (Discord, client) {
+exports.sendMessage = function (Discord, results, client) {
     let guildOutput = "";
     client.guilds.cache.forEach((guild) => {
         guildOutput = guildOutput + (guild.name + ", ");
         guild.channels.cache.forEach((element) => {
             if (element.name === "instabilities") {
-                this.sendFromFile(element, 0);
+                this.sendFromFile(Discord, results, element, 0);
             }
         });
     });

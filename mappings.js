@@ -5,6 +5,7 @@ exports.bosses = {
     17021: "MAMA",
     17028: "Siax",
     16948: "Ensolyss",
+    23254: "Disco Pogo",
 }
 
 exports.instabDict = {

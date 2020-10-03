@@ -27,7 +27,7 @@ client.on("ready", () => {
     var job = new CronJob(
         "0 1 2 * * *",
         () => {
-            instab.sendMessage(Discord, client);
+            instab.sendMessage(Discord, results, client);
         },
         null,
         true,
@@ -43,6 +43,13 @@ client.on("message", (message) => {
     } else if (message.content === "!tomorrow") {
         console.log("Tomorrow asked by " + message.author.tag);
         instab.sendFromFile(Discord, results, message.channel, 1);
+    } else if (message.content === "!help"){
+        message.channel.send("```**HELP MENU** - Discretize [dT] bot \n \
+- !today - shows todays instabilities\n \
+- !tomorrow - shows tomorrows instabilities\n \
+- !upload <dps.report link> - uploads a log\n \
+- !percentiles <dps.report link> - shows percentiles for a log\n \
+        ```");
     }
 });
 
@@ -61,9 +68,6 @@ client.on("message", (message) => {
                         return console.log(err);
                     }
                     processLog.processLog(db, body, permalink);
-                    db.partyPercentile(permalink, function (party, members) {
-                        processLog.sendPercentileEmbed(Discord, message.channel, party, members, permalink);
-                    });
                 });
             }
         });

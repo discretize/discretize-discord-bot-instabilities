@@ -45,7 +45,7 @@ exports.getPersonPercentileEmbed = function (Discord, acc, result) {
         desc += "\n";
     }
     embed.setDescription(desc)
-
+    console.log(desc)
     return embed;
 }
 

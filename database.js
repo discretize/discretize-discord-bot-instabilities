@@ -117,6 +117,55 @@ exports.partyPercentile = function (permalink, callback) {
     });
 }
 
+exports.allPercentiles = function (categories, callback) {
+    let cat = "";
+    if (categories.length > 0) {
+        cat += "name = '" + categories[0] + "' "
+        for (let i = 1; i < categories.length; i++) {
+            cat += " OR name= '" + categories[i] + "'"
+        }
+
+        const sql = `   SELECT *, count(spec) count
+                        FROM (
+                                 SELECT spec,
+                                        boss_id,
+                                        PERCENTILE_CONT(0.5) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec)  as T50,
+                                        PERCENTILE_CONT(0.9) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec)  as T90,
+                                        PERCENTILE_CONT(0.99) WITHIN GROUP ( ORDER BY dps_target) OVER ( PARTITION BY boss_id, spec) as T99,
+                                        PERCENTILE_CONT(0.5) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec)  as C50,
+                                        PERCENTILE_CONT(0.9) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec)  as C90,
+                                        PERCENTILE_CONT(0.99) WITHIN GROUP ( ORDER BY dps_cleave) OVER ( PARTITION BY boss_id, spec) as C99
+                                 FROM (
+                                          SELECT spec,
+                                                 boss_id,
+                                                 dps_target,
+                                                 dps_cleave
+                                          FROM player_kill
+                                                   join player_character pc on pc.id = player_kill.character_id
+                                                   join player p on p.id = pc.player_id
+                                                   join group_kill gk on gk.id = player_kill.groupkill_id
+                                                   join (SELECT g.id as group_kill_id
+                                                         FROM group_kill g
+                                                         WHERE g.id in (
+                                                             SELECT group_kill_id
+                                                             FROM kill_category
+                                                             WHERE ${cat}
+                                                             GROUP BY group_kill_id
+                                                             having count(group_kill_id) = ${categories.length}
+                                                         )
+                                          ) kc on gk.id = kc.group_kill_id
+                                          ORDER BY boss_id
+                                      ) a
+                             ) b
+                        group by spec, boss_id`
+
+        connection.query(sql, function (err, result) {
+            if (err) throw err;
+            callback(result);
+        });
+    }
+}
+
 exports.personPercentile = function (acc, callback) {
     const sql = `SELECT distinct spec,
                                 boss_id,

@@ -36,6 +36,17 @@ client.on("ready", () => {
     job.start();
 });
 
+function sendHelp(channel) {
+    channel.send("```**HELP MENU** - Discretize [dT] bot \n \
+- !today - shows todays instabilities\n \
+- !tomorrow - shows tomorrows instabilities\n \
+- !upload <optional: categories> <dps.report link> - uploads a log\n \
+- !percentiles <dps.report link> - shows percentiles for a log\n \
+- !verify <api-key> - api-key must be named dtlogbot \n \
+- !addcategory <dps.report link> - adds categories to logs to filter\
+        ```");
+}
+
 client.on("message", (message) => {
     if (message.content === "!today") {
         console.log("Today asked by " + message.author.tag);
@@ -44,14 +55,7 @@ client.on("message", (message) => {
         console.log("Tomorrow asked by " + message.author.tag);
         instab.sendFromFile(Discord, results, message.channel, 1);
     } else if (message.content === "!help") {
-        message.channel.send("```**HELP MENU** - Discretize [dT] bot \n \
-- !today - shows todays instabilities\n \
-- !tomorrow - shows tomorrows instabilities\n \
-- !upload <optional: categories> <dps.report link> - uploads a log\n \
-- !percentiles <dps.report link> - shows percentiles for a log\n \
-- !verify <api-key> - api-key must be named dtlogbot \n \
-- !addcategory <dps.report link> - adds categories to logs to filter\
-        ```");
+        sendHelp(message.channel);
     }
 });
 
@@ -59,9 +63,11 @@ client.login(process.env.BOT_TOKEN);
 db.connect();
 
 client.on("message", (message) => {
-    if (message.content.startsWith("!upload")) {
+    let args = message.content.split(" ");
+
+    if (args[0].toLowerCase() === "!upload") {
         const urls = getUrls(message.content);
-        const categories = getCategories(message.content);
+        const categories = getCategories(message.content, 1);
 
         urls.forEach((value) => {
             if (value.startsWith("https://dps.report/")) {
@@ -81,37 +87,53 @@ client.on("message", (message) => {
                 message.channel.send("Message is not a valid dps.report link: " + value);
             }
         });
-    } else if (message.content.startsWith("!percentile")) {
-        if (message.content.split(" ").length > 1) {
-            const urls = getUrls(message.content);
-            urls.forEach((value) => {
-                if (value.startsWith("https://dps.report/")) {
-                    let permalink = value.substr(19);
-                    db.partyPercentile(permalink, function (party, members) {
-                        let embed = processLog.getPercentileEmbed(Discord, party, members, permalink);
-                        message.channel.send(embed);
-                    });
-                } else {
-                    message.channel.send("Message is not a valid dps.report link: " + value);
-                }
-            });
-        } else {
-            // give info about personal percentages for verified users
-            db.isVerified(message.author.tag, function (result) {
-                if (result.length === 1) {
-                    if (result[0].verified) {
-                        db.personPercentile(result[0].acc, function (res2) {
-                            message.channel.send(processLog.getPersonPercentileEmbed(Discord, result[0].acc, res2));
-                        });
-                    }
-                } else {
-                    message.channel.send("Your account is not verified yet! Use !verify <api key>!")
-                }
-            });
+    } else if (args[0].toLowerCase() === "!stats") {
+        if (args.length <= 1) {
+            // display help
+            sendHelp(message.channel);
+            return;
         }
-    } else if (message.content.startsWith("!addcategory")) {
+        switch (args[1].toLowerCase()) {
+            case "category":
+                const categories = getCategories(message.content, 2);
+
+                db.allPercentiles(categories, (results) => {
+                    message.channel.send(processLog.getPersonPercentileEmbed(Discord, categories.toString(), results));
+                })
+                break;
+            case "self":
+                // give info about personal percentages for verified users
+                db.isVerified(message.author.tag, function (result) {
+                    if (result.length === 1) {
+                        if (result[0].verified) {
+                            db.personPercentile(result[0].acc, function (res2) {
+                                message.channel.send(processLog.getPersonPercentileEmbed(Discord, result[0].acc, res2));
+                            });
+                        }
+                    } else {
+                        message.channel.send("Your account is not verified yet! Use !verify <api key>!")
+                    }
+                });
+                break;
+            case "log":
+                const urls = getUrls(message.content);
+                urls.forEach((value) => {
+                    if (value.startsWith("https://dps.report/")) {
+                        let permalink = value.substr(19);
+                        db.partyPercentile(permalink, function (party, members) {
+                            let embed = processLog.getPercentileEmbed(Discord, party, members, permalink);
+                            message.channel.send(embed);
+                        });
+                    } else {
+                        message.channel.send("Message is not a valid dps.report link: " + value);
+                    }
+                });
+                break;
+        }
+
+    } else if (args[0].toLowerCase() === "!addcategory") {
         const urls = getUrls(message.content);
-        const categories = getCategories(message.content);
+        const categories = getCategories(message.content, 1);
         urls.forEach((value) => {
             if (value.startsWith("https://dps.report/")) {
                 let permalink = value.substr(19);
@@ -123,13 +145,12 @@ client.on("message", (message) => {
                 message.channel.send("Message is not a valid dps.report link: " + value);
             }
         });
-    } else if (message.content.startsWith("!verify")) {
-        const split = message.content.split(" ");
-        if (split.length === 1) {
+    } else if (args[0].toLowerCase() === "!verify") {
+        if (args.length === 1) {
             message.channel.send("Invalid API Key");
             return;
         }
-        const api = message.content.split(" ")[1];
+        const api = args[1];
 
         request("https://api.guildwars2.com/v2/tokeninfo?access_token=" + api, {json: true}, (err, res, body) => {
             if (body.name === 'dtlogbot') {
@@ -142,16 +163,19 @@ client.on("message", (message) => {
             }
         });
     }
-})
+});
 
-function getCategories(cnt) {
+function getCategories(cnt, start) {
     let categories = [];
     const split = cnt.split(" ");
-    if (split.length === 1) {
+    if (split.length === start) {
         return categories;
     }
-    let i = 1;
+    let i = start;
     while (true) {
+        if (i === split.length) {
+            break;
+        }
         if (split[i].startsWith("https://")) {
             break;
         }

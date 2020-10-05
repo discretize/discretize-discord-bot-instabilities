@@ -59,6 +59,29 @@ client.on("message", (message) => {
     }
 });
 
+function uploadLogs(urls, message) {
+    const categories = getCategories(message.content, 1);
+
+    urls.forEach((value) => {
+        if (value.startsWith("https://dps.report/")) {
+            let permalink = value.substr(19);
+
+            request('https://dps.report/getJson?permalink=' + permalink, {json: true}, (err, res, body) => {
+                if (err) {
+                    return console.log(err);
+                }
+                db.insertLog(body, permalink);
+                categories.forEach((cat) => {
+                    db.addCategory(permalink, cat);
+                });
+                message.react("👍");
+            });
+        } else {
+            message.channel.send("Message is not a valid dps.report link: " + value);
+        }
+    });
+}
+
 client.login(process.env.BOT_TOKEN);
 db.connect();
 
@@ -66,27 +89,21 @@ client.on("message", (message) => {
     let args = message.content.split(" ");
 
     if (args[0].toLowerCase() === "!upload") {
-        const urls = getUrls(message.content);
-        const categories = getCategories(message.content, 1);
 
-        urls.forEach((value) => {
-            if (value.startsWith("https://dps.report/")) {
-                let permalink = value.substr(19);
-
-                request('https://dps.report/getJson?permalink=' + permalink, {json: true}, (err, res, body) => {
-                    if (err) {
-                        return console.log(err);
+        let urls = [];
+        if (message.attachments.size > 0) {
+            message.attachments.mapValues((v, k) => {
+                request.get(v.attachment, function (error, resp, body) {
+                    if (!error && resp.statusCode === 200) {
+                        urls = getUrls(body);
+                        uploadLogs(urls, message);
                     }
-                    db.insertLog(body, permalink);
-                    categories.forEach((cat) => {
-                        db.addCategory(permalink, cat);
-                    });
-                    message.react("👍");
                 });
-            } else {
-                message.channel.send("Message is not a valid dps.report link: " + value);
-            }
-        });
+            });
+        } else {
+            uploadLogs(getUrls(message.content), message);
+        }
+
     } else if (args[0].toLowerCase() === "!stats") {
         if (args.length <= 1) {
             // display help

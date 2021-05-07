@@ -35,7 +35,7 @@ function generateEmbed(Discord, node) {
     }
 
     const embed = new Discord.MessageEmbed()
-        .setColor("#ff33cc")
+        .setColor("#00CCCC")
         .setTitle("Instabilities for " + node.Date)
         .setURL("https://discretize.eu")
         .setThumbnail(

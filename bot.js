@@ -1,15 +1,16 @@
+require('dotenv').config();
+var pjson = require('./package.json');
 const instab = require("./instability.js");
 const Discord = require("discord.js");
-
 const client = new Discord.Client();
+
 const csv = require("csv-parser");
 const fs = require("fs");
 const results = [];
 var CronJob = require("cron").CronJob;
 
-
 client.on("ready", () => {
-    client.user.setActivity("Instabilities", {type: "WATCHING"});
+    client.user.setActivity("instabilities", {type: 'WATCHING'});
 
     fs.createReadStream("instabs.csv")
         .pipe(csv())
@@ -33,21 +34,44 @@ client.on("ready", () => {
 
 function sendHelp(channel) {
     channel.send(
-        "```**HELP MENU** - Discretize [dT] bot \n \
+        "```md\n**HELP MENU** - Discretize [dT] bot \n \
     - !today - shows today's instabilities\n \
     - !tomorrow - shows tomorrow's instabilities\n \
+    - !in x - shows the instabilities in x days \
             ```"
     );
 }
 
+
 client.on("message", (message) => {
     if (message.content === "!today") {
-        console.log("Today asked by " + message.author.tag);
+        //console.log("Today asked by " + message.author.tag);
         instab.sendFromFile(Discord, results, message.channel, 0);
     } else if (message.content === "!tomorrow") {
-        console.log("Tomorrow asked by " + message.author.tag);
+        //console.log("Tomorrow asked by " + message.author.tag);
         instab.sendFromFile(Discord, results, message.channel, 1);
+    } else if (message.content.startsWith("!in")) {
+        function help(channel) {
+            channel.send("Invalid amount of days. Enter: `!in 7` to get the instabs in 7 days.");
+        }
+
+        let split = message.content.split(' ');
+        if (split.length !== 2) {
+            help(message.channel);
+            return;
+        }
+        let x = Number.parseInt(split[1], 10);
+        if (Number.isNaN(x)) {
+            help(message.channel);
+        } else {
+            instab.sendFromFile(Discord, results, message.channel, x);
+        }
+
     } else if (message.content === "!help") {
         sendHelp(message.channel);
     }
+});
+
+client.login(process.env.BOT_TOKEN).then(r => {
+    console.log("Logged in")
 });

@@ -39,7 +39,7 @@ function generateEmbed(Discord, node) {
         .setTitle("Instabilities for " + node.Date)
         .setURL("https://discretize.eu")
         .setThumbnail(
-            "https://wiki.guildwars2.com/images/f/f6/Cracked_Fractal_Encryption.png"
+            "http://old.discretize.eu/_/img/discretize-512.png"
         )
         .addFields(
             {name: "Sunqua Peak", value: strToI(node.CM3)},

@@ -64,7 +64,9 @@ const sendDaily = (channel, offset) => {
         future.getMonth() + 1
       }-${future.getDate()}`
     )
-    .setURL("https://discretize.eu")
+    .setURL(
+      "https://github.com/discretize/discretize-discord-bot-instabilities"
+    )
     .setThumbnail("http://old.discretize.eu/_/img/discretize-512.png")
     .addFields(
       { name: "Sunqua Peak", value: getInstabilities(100, offset) },
@@ -87,16 +89,13 @@ const sendDaily = (channel, offset) => {
  * Broadcasts the instabilities on reset to all servers in the #instabilities channel
  */
 const broadcastInstabilities = () => {
-  let guildOutput = "";
   client.guilds.cache.forEach((guild) => {
-    guildOutput = guildOutput + (guild.name + ", ");
     guild.channels.cache.forEach((element) => {
       if (element.name === "instabilities") {
         sendDaily(element, 0);
       }
     });
   });
-  console.log("Notified: " + guildOutput);
 };
 
 client.on("ready", () => {

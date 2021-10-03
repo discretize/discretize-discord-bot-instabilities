@@ -1,10 +1,10 @@
 {
-  "name": "discord.js-heroku",
-  "version": "1.1.0",
-  "description": "An in-depth guide on deploying your Discord.js bot on Heroku",
+  "name": "discretize-discord-bot-instabilities",
+  "version": "1.2.0",
+  "description": "A discord bot for broadcasting gw2 fractal instabilities",
   "main": "index.js",
   "engines": {
-    "node": "12.x",
+    "node": "16.x",
     "npm": "*"
   },
   "scripts": {
@@ -13,25 +13,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SpatiumPrinceps/Instability-Discord-Bot/"
+    "url": "git+https://github.com/discretize/discretize-discord-bot-instabilities"
   },
   "keywords": [
-    "heroku",
+    "gw2",
+    "fractals",
+    "instabilities",
     "discord.js"
   ],
-  "author": "SpatiumPrinceps",
+  "author": "gw2princeps",
   "license": "MIT",
-  "homepage": "https://github.com/synicalsyntax/discord.js-heroku#readme",
+  "homepage": "https://discretize.eu",
   "dependencies": {
     "cron": "^1.8.2",
-    "csv-parser": "^2.3.3",
     "discord.js": "^12.5.3",
-    "dotenv": "^9.0.0",
-    "easy-table": "^1.1.1",
-    "get-urls": "^10.0.0",
-    "human-format": "^0.11.0",
-    "mysql": "^2.18.1",
-    "pretty-ms": "^7.0.1",
-    "request": "^2.88.2"
+    "dotenv": "^9.0.0"
   }
 }

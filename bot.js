@@ -45,6 +45,61 @@ const getT4Dailies = (targetDate) => {
   return dailies;
 };
 
+const sendEmbed = (channel, date, fields) => {
+  const embed = new Discord.MessageEmbed()
+    .setColor("#00CCCC")
+    .setTitle(
+      `Instabilities for ${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`
+    )
+    .setURL(
+      "https://github.com/discretize/discretize-discord-bot-instabilities"
+    )
+    .setThumbnail("http://old.discretize.eu/_/img/discretize-512.png")
+    .addFields(...fields);
+
+  channel.send(embed);
+};
+
+const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
+  const DAYS_AHEAD = 30;
+  const matchingT4s = [];
+  console.log(instabs);
+  console.log(isWhitelist);
+  for (let i = 0; i < DAYS_AHEAD; i++) {
+    const t4instabs = getInstabilities(level, i)
+      .split("-")
+      .map((instab) => instab.trim());
+
+    const filtered = t4instabs.filter((value) => instabs.includes(value));
+    const t4Object = { day: i, instabs: t4instabs.join(" - ") };
+    if (isWhitelist && filtered.length === instabs.length) {
+      matchingT4s.splice(-1, 0, t4Object);
+    }
+    if (!isWhitelist && filtered.length === 0) {
+      matchingT4s.splice(-1, 0, t4Object);
+    }
+  }
+
+  const listOfT4s = matchingT4s
+    .sort((a, b) => a.day - b.day)
+    .map((t4) => {
+      const date = new Date();
+      date.setDate(date.getDay() + t4.day);
+      return `**${date.toISOString().slice(0, 10)}**: \t\t\t${t4.instabs}`;
+    })
+    .join("\n");
+  channel.send(
+    `All days for ${
+      mapping.fractals.find((frac) => frac.level === level).name
+    } ${
+      isWhitelist ? "with" : "without"
+    } the instabilities ${instabs}:\n${listOfT4s}`
+  );
+  console.log(matchingT4s);
+};
+
 /**
  * Sends a discord embed to a given channel, which contains the daily fractals, cms and their corresponding instabilities.
  * @param {Object} channel The discord channel to send the embed to
@@ -57,32 +112,21 @@ const sendDaily = (channel, offset) => {
 
   const dailies = getT4Dailies(future);
 
-  const embed = new Discord.MessageEmbed()
-    .setColor("#00CCCC")
-    .setTitle(
-      `Instabilities for ${future.getFullYear()}-${
-        future.getMonth() + 1
-      }-${future.getDate()}`
-    )
-    .setURL(
-      "https://github.com/discretize/discretize-discord-bot-instabilities"
-    )
-    .setThumbnail("http://old.discretize.eu/_/img/discretize-512.png")
-    .addFields(
-      { name: "Sunqua Peak", value: getInstabilities(100, offset) },
-      { name: "Shattered Observatory", value: getInstabilities(99, offset) },
-      { name: "Nightmare", value: getInstabilities(98, offset) }
-    );
+  const fields = [
+    { name: "Sunqua Peak", value: getInstabilities(100, offset) },
+    { name: "Shattered Observatory", value: getInstabilities(99, offset) },
+    { name: "Nightmare", value: getInstabilities(98, offset) },
+  ];
 
   dailies
     .filter((fractal) => !fractal.cm)
     .forEach((daily) => {
-      embed.addField(
-        `${daily.name} (lv.${daily.level})`,
-        getInstabilities(daily.level, offset)
-      );
+      fields.splice(0, 0, {
+        name: `${daily.name} (lv.${daily.level})`,
+        value: getInstabilities(daily.level, offset),
+      });
     });
-  channel.send(embed);
+  sendEmbed(channel, future, fields);
 };
 
 /**
@@ -120,7 +164,8 @@ function sendHelp(channel) {
     "```md\n**HELP MENU** - Discretize [dT] bot \n \
     - !today - shows today's instabilities\n \
     - !tomorrow - shows tomorrow's instabilities\n \
-    - !in x - shows the instabilities in x days \
+    - !in x - shows the instabilities in x days \n \
+    - !filter <level> <with|without> <instabs> \
             ```"
   );
 }
@@ -130,6 +175,26 @@ client.on("message", (message) => {
     sendDaily(message.channel, 0);
   } else if (message.content === "!tomorrow") {
     sendDaily(message.channel, 1);
+  } else if (message.content.startsWith("!filter")) {
+    function help(channel) {
+      channel.send(
+        "Invalid command arguments. Enter: `!filter <Fractal Level> <'with' or 'without'> Instab1-Instab2-Instab3` to get a list of days that contain (or do not contain) the given instabs. Example: `!filter 76 without No Pain, No Gain-Flux Bomb`"
+      );
+    }
+    const args = message.content.split(" ");
+    const level = Number.parseInt(args[1]);
+    if (Number.isNaN(level) || level < 76) {
+      help(message.channel);
+      return;
+    }
+    const isWhitelist = args[2] === "with";
+
+    sendFilteredT4(
+      message.channel,
+      level,
+      isWhitelist,
+      args.splice(3).join(" ").split("-")
+    );
   } else if (message.content.startsWith("!in")) {
     function help(channel) {
       channel.send(

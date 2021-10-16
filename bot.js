@@ -24,7 +24,7 @@ const getInstabilities = (level, offset) => {
   var oneDay = 1000 * 60 * 60 * 24;
   var day = Math.floor(diff / oneDay);
 
-  const instabs = data.instabilities[level.toString()][day + offset];
+  const instabs = data.instabilities[level.toString()][(day + offset) % 365];
   // Format it nicely
   return instabs.map((instab) => data.instability_names[instab]).join(" - ");
 };
@@ -62,11 +62,28 @@ const sendEmbed = (channel, date, fields) => {
   channel.send(embed);
 };
 
+const sendT4s = (channel, offset) => {
+  const instabs = mapping.fractals.map((fractal) => ({
+    name: fractal.name,
+    level: fractal.level,
+    instabs: getInstabilities(fractal.level, offset),
+  }));
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+
+  channel.send(
+    `All T4 fractals and there instabilities for ${date
+      .toISOString()
+      .slice(0, 10)}\n${instabs
+      .map((frac) => `**${frac.name} (${frac.level})**: ${frac.instabs}`)
+      .join("\n")}`
+  );
+};
+
 const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
   const DAYS_AHEAD = 30;
   const matchingT4s = [];
-  console.log(instabs);
-  console.log(isWhitelist);
+
   for (let i = 0; i < DAYS_AHEAD; i++) {
     const t4instabs = getInstabilities(level, i)
       .split("-")
@@ -86,7 +103,7 @@ const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
     .sort((a, b) => a.day - b.day)
     .map((t4) => {
       const date = new Date();
-      date.setDate(date.getDay() + t4.day);
+      date.setDate(date.getDate() + t4.day);
       return `**${date.toISOString().slice(0, 10)}**: \t\t\t${t4.instabs}`;
     })
     .join("\n");
@@ -97,7 +114,6 @@ const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
       isWhitelist ? "with" : "without"
     } the instabilities ${instabs}:\n${listOfT4s}`
   );
-  console.log(matchingT4s);
 };
 
 /**
@@ -165,7 +181,8 @@ function sendHelp(channel) {
     - !today - shows today's instabilities\n \
     - !tomorrow - shows tomorrow's instabilities\n \
     - !in x - shows the instabilities in x days \n \
-    - !filter <level> <with|without> <instabs> \
+    - !filter <level> <with|without> <instabs> \n \
+    - !t4s <in|at> <offset|date> \
             ```"
   );
 }
@@ -173,6 +190,37 @@ function sendHelp(channel) {
 client.on("message", (message) => {
   if (message.content === "!today") {
     sendDaily(message.channel, 0);
+  } else if (message.content.startsWith("!t4s")) {
+    function help(channel) {
+      channel.send(
+        "Invalid command arguments. Enter: `!t4s at <YYYY-MM-DD>` to get a list of t4s for a given date and their instabilities"
+      );
+    }
+
+    const args = message.content.split(" ");
+    if (args.length !== 3) {
+      help(message.channel);
+      return;
+    }
+
+    let offset = 0;
+    if (message.content.startsWith("!t4s at")) {
+      const date = new Date(args[2]);
+
+      var start = new Date();
+      var diff = date - start;
+      var oneDay = 1000 * 60 * 60 * 24;
+
+      offset = Math.floor(diff / oneDay) + 1;
+    } else if (message.content.startsWith("!t4s in")) {
+      offset = Number.parseInt(args[2], 10);
+      if (Number.isNaN(offset)) {
+        help(message.channel);
+        return;
+      }
+    }
+
+    sendT4s(message.channel, offset);
   } else if (message.content === "!tomorrow") {
     sendDaily(message.channel, 1);
   } else if (message.content.startsWith("!filter")) {

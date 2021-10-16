@@ -65,8 +65,7 @@ const sendEmbed = (channel, date, fields) => {
 const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
   const DAYS_AHEAD = 30;
   const matchingT4s = [];
-  console.log(instabs);
-  console.log(isWhitelist);
+
   for (let i = 0; i < DAYS_AHEAD; i++) {
     const t4instabs = getInstabilities(level, i)
       .split("-")
@@ -86,7 +85,7 @@ const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
     .sort((a, b) => a.day - b.day)
     .map((t4) => {
       const date = new Date();
-      date.setDate(date.getDay() + t4.day);
+      date.setDate(date.getDate() + t4.day);
       return `**${date.toISOString().slice(0, 10)}**: \t\t\t${t4.instabs}`;
     })
     .join("\n");
@@ -173,6 +172,7 @@ function sendHelp(channel) {
 client.on("message", (message) => {
   if (message.content === "!today") {
     sendDaily(message.channel, 0);
+  } else if (message.content === "!today t4s") {
   } else if (message.content === "!tomorrow") {
     sendDaily(message.channel, 1);
   } else if (message.content.startsWith("!filter")) {

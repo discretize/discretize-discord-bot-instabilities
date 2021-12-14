@@ -81,7 +81,7 @@ const sendT4s = (channel, offset) => {
 };
 
 const sendFilteredT4 = (channel, level, isWhitelist, instabs) => {
-  const DAYS_AHEAD = 30;
+  const DAYS_AHEAD = 29;
   const matchingT4s = [];
 
   for (let i = 0; i < DAYS_AHEAD; i++) {

@@ -164,13 +164,13 @@ client.on("ready", () => {
 
 client.on("ready", () => {
   var job = new CronJob(
-    "0 1 2 * * *",
+    "0 1 0 * * *",
     () => {
       broadcastInstabilities();
     },
     null,
     true,
-    "Europe/Berlin"
+    "UTC"
   );
   job.start();
 });

@@ -164,26 +164,29 @@ client.on("ready", () => {
 
 client.on("ready", () => {
   var job = new CronJob(
-    "0 1 2 * * *",
+    "0 1 0 * * *",
     () => {
       broadcastInstabilities();
     },
     null,
     true,
-    "Europe/Berlin"
+    "UTC"
   );
   job.start();
 });
 
 function sendHelp(channel) {
   channel.send(
-    "```md\n**HELP MENU** - Discretize [dT] bot \n \
-    - !today - shows today's instabilities\n \
-    - !tomorrow - shows tomorrow's instabilities\n \
-    - !in x - shows the instabilities in x days \n \
-    - !filter <level> <with|without> <instabs> \n \
-    - !t4s <in|at> <offset|date> \
-            ```"
+    `\`\`\`md
+    **HELP MENU** - Discretize [dT] bot
+    - !today - shows today's instabilities
+    - !tomorrow - shows tomorrow's instabilities
+    - !in x - shows the instabilities in x days
+    - !filter <level> <with|without> <instabs>
+    - !t4s <in|at> <offset|date>
+
+    Create a channel named #instabilities to receive daily updates on instabilities.
+    \`\`\``
   );
 }
 

@@ -177,16 +177,16 @@ client.on("ready", () => {
 
 function sendHelp(channel) {
   channel.send(
-    `\`\`\`md
-    **HELP MENU** - Discretize [dT] bot
-    - !today - shows today's instabilities
-    - !tomorrow - shows tomorrow's instabilities
-    - !in x - shows the instabilities in x days
-    - !filter <level> <with|without> <instabs>
-    - !t4s <in|at> <offset|date>
+`\`\`\`md
+**HELP MENU** - Discretize [dT] bot
+  - !today - shows today's instabilities
+  - !tomorrow - shows tomorrow's instabilities
+  - !in x - shows the instabilities in x days
+  - !filter <level> <with|without> <instabs>
+  - !t4s <in|at> <offset|date>
 
-    Create a channel named #instabilities to receive daily updates on instabilities.
-    \`\`\``
+Create a channel named #instabilities to receive daily updates on instabilities.
+\`\`\``
   );
 }
 

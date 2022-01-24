@@ -24,7 +24,8 @@ const getInstabilities = (level, offset) => {
   var oneDay = 1000 * 60 * 60 * 24;
   var day = Math.floor(diff / oneDay);
 
-  const instabs = data.instabilities[level.toString()][(day + offset) % 365];
+  const instabs =
+    data.instabilities[level.toString()][(day + offset - 1) % 365];
   // Format it nicely
   return instabs.map((instab) => data.instability_names[instab]).join(" - ");
 };
@@ -177,7 +178,7 @@ client.on("ready", () => {
 
 function sendHelp(channel) {
   channel.send(
-`\`\`\`md
+    `\`\`\`md
 **HELP MENU** - Discretize [dT] bot
   - !today - shows today's instabilities
   - !tomorrow - shows tomorrow's instabilities

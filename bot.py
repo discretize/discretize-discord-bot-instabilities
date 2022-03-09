@@ -206,7 +206,7 @@ async def filter(ctx):
     if ctx.options.with_without == "with":
         for i in range(30):
             if ctx.options.instability_1 != None and ctx.options.instability_2 != None:
-                if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) or ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
+                if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) and ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
                     filter_message += f"**{curr_date}**:\t"
                     for j in filter_instabs(ctx.options.level,day):
                         filter_message += j + " - "
@@ -239,7 +239,7 @@ async def filter(ctx):
     else:
         for i in range(30):
             if ctx.options.instability_1 != None and ctx.options.instability_2 != None:
-                if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) or ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
+                if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) and ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
                     curr_date += timedelta(1)
                     day += 1
                     continue

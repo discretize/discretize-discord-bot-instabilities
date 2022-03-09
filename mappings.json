@@ -1,0 +1,48 @@
+{
+    "fractals":[
+        { "name": "Aetherblade", "id": 2948, "level": 96 }, 
+        { "name": "Aquatic Ruins", "id": 2956, "level": 76 }, 
+        { "name": "Captain Mai Trin", "id": 2932, "level": 95 }, 
+        { "name": "Chaos Isles", "id": 3038, "level": 97 }, 
+        { "name": "Cliffside", "id": 2930, "level": 94 }, 
+        { "name": "Deepstone", "id": 4224, "level": 84 }, 
+        { "name": "Molten Boss", "id": 2966, "level": 90 }, 
+        { "name": "Molten Furnace", "id": 2903, "level": 83 }, 
+        { "name": "Nightmare", "id": 3177, "level": 98, "cm": true }, 
+        { "name": "Shattered Observatory", "id": 3458, "level": 99, "cm": true }, 
+        { "name": "Sirens Reef", "id": 4494, "level": 78 }, 
+        { "name": "Snowblind", "id": 2952, "level": 93 }, 
+        { "name": "Solid Ocean", "id": 2923, "level": 80 },
+        { "name": "Swampland", "id": 2892, "level": 89 }, 
+        { "name": "Thaumnova Reactor", "id": 2967, "level": 82 }, 
+        { "name": "Twilight Oasis", "id": 3973, "level": 87 }, 
+        { "name": "Uncategorized", "id": 2939, "level": 91 }, 
+        { "name": "Underground Facility", "id": 2947, "level": 81 }, 
+        { "name": "Urban Battleground", "id": 2941, "level": 85 }, 
+        { "name": "Volcanic", "id": 2989, "level": 92 }, 
+        { "name": "Sunqua Peak", "id": 5446, "level": 100, "cm": true }
+    ],
+
+
+    "rotation":[
+        [6, 9, 2],
+        [19, 11, 8],
+        [0, 16, 14],
+        [3, 4, 15],
+        [2, 20, 5],
+        [8, 11, 12],
+        [3, 16, 18],
+        [5, 10, 7],
+        [15, 17, 6],
+        [13, 9, 19],
+        [11, 14, 1],
+        [17, 20, 18],
+        [3, 0, 8],
+        [10, 4, 6],
+        [13, 5, 12]
+    ]
+}
+
+
+
+

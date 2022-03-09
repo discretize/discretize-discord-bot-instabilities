@@ -1,4 +1,8 @@
-package-lock.json
-.history
-node_modules
+build/
+.idea/
+__pycache__/
+.vscode/
+
+env/
+
 .env

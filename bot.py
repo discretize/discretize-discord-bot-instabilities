@@ -84,7 +84,7 @@ async def bot_started(event):
     await bot.update_presence(status=hikari.Status.ONLINE, activity=hikari.Activity(type=hikari.ActivityType.WATCHING, name="instabilities"))
 
 
-# Daily broadcast of instabilities in #instabilities channel
+# Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
 @tasks.task(CronTrigger("1 1 * * *"),auto_start=True)
 async def daily_instabilities_broadcast():

@@ -112,7 +112,7 @@ async def daily_instabilities_broadcast():
 @lightbulb.command("help","Shows list of commands")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def help(ctx):
-    await ctx.respond("```md\nHelp menu - Discretize [dT] Bot\n\t- /today - shows today's instabilities\n\t- /tomorrow - shows tomorrow's instabilities\n\t- /in x - shows the instabilities in x days\n\t- /filter <level> <with|without> <instabs>\nCreate a channel named #instabilities to receive daily updates on instabilities.```")
+    await ctx.respond("```md\nDiscretize [dT] Bot - Help menu\nBot now includes integrated slash commands. To ease use, you can tab or click options\n\t - /today - Shows the instabilities for today\n\t - /tomorrow - Shows the instabilities for tomorrow\n\t - /in x - Shows the instabilities in x days\n\t - /filter <level> <with_without> <instability_1> <instability_2>\nIf channel #instabilities is created, the bot will auto broadcast new instabilities every day at 01:01```")
 
 @bot.command
 @lightbulb.command("today","Shows today instabilities")

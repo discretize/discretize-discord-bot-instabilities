@@ -114,8 +114,16 @@ def send_instabilities(days=0):
 async def bot_started(event):
     print("Bot has started")
     await bot.update_presence(status=hikari.Status.ONLINE, activity=hikari.Activity(type=hikari.ActivityType.WATCHING, name="instabilities"))
+    
 
-
+# Will remove this notification after a month or two
+@bot.listen()
+async def temporary_info(event: hikari.GuildMessageCreateEvent):
+    legacy_commands = ["!today","!tomorrow","!in","!filter","!t4s","!help"]
+    for i in legacy_commands:
+        if event.content.startswith(f"{i}"):
+            await event.message.respond("The prefix commands have been discontinued, please use slash (/today, /tomorrow, /in, /filter)\nFor more info type /help")
+            
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
 @tasks.task(CronTrigger("0 1 * * *"),auto_start=True)

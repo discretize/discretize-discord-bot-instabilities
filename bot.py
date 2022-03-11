@@ -32,7 +32,7 @@ Bot now includes integrated slash commands. To ease use, you can tab or click op
 \t - /tomorrow - Shows the instabilities for tomorrow
 \t - /in x - Shows the instabilities in x days
 \t - /filter <level> <with_without> <instability_1> <instability_2>
-If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 01:01```"""
+If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 01:00```"""
 
 def get_day_of_year():
     day_of_year = datetime.now().timetuple().tm_yday
@@ -161,7 +161,7 @@ async def bot_started(event):
 
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
-@tasks.task(CronTrigger("1 1 * * *"),auto_start=True)
+@tasks.task(CronTrigger("0 1 * * *"),auto_start=True)
 async def daily_instabilities_broadcast():
     async for i in bot.rest.fetch_my_guilds():
         guild = i.id

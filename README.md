@@ -4,11 +4,10 @@ The purpose of this discord bot is to display instabilities for fractals in the 
 
 There are several commands available:
 
-- `!today` - Prints todays instabilities.
-- `!tomorrow` - Prints tomorrows instabilities.
-- `!in x` - Prints the instabilities in x days.
-- `!filter <level> <with|without> <instabs> ` - Filters a given level for instabilities (upcoming 30 days) and prints a list of days that match the constraints.
-- `!t4s <in|at> <offset|date>` - Prints out all t4 fractals for a given date.
+- `/today` - Prints todays instabilities.
+- `/tomorrow` - Prints tomorrows instabilities.
+- `/in x` - Prints the instabilities in x days.
+- `/filter <level> <with_without> <instability_1> <instability_2> ` - Filters a given level for instabilities (upcoming 30 days) and prints a list of days that match the constraints.
 
 Asides from providing the data when asked the bot will also notify every server that it has been added to. The broadcast happens at reset and is delivered in the `#instabilities` (mind the exact spelling) channel.
 

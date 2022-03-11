@@ -4,6 +4,7 @@ from lightbulb.ext import tasks
 from lightbulb.ext.tasks import CronTrigger
 import json
 import os
+import calendar
 from datetime import date, datetime, timedelta
 from itertools import chain
 from dotenv import load_dotenv
@@ -31,8 +32,8 @@ def get_day_of_year():
     return day_of_year
 
 def get_rotation():
-    current_rotation = date(2022, 2, 28).timetuple().tm_yday # 28th of February 2022
-    rotation = get_day_of_year()-current_rotation
+    current_rotation = date(2022, 2, 28) # 28th of February 2022
+    rotation = (date.today()-current_rotation).days
     while rotation > 15:
         rotation -= 15
     return rotation
@@ -99,7 +100,10 @@ async def daily_instabilities_broadcast():
         if i not in cms:
             embed.add_field(f"{y['fractals'][i]['name']} (lv.{y['fractals'][i]['level']})", " - ".join(assign_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     for loop_count, i in enumerate(cms):
-        embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        if i in y['rotation'][get_rotation()]:
+            embed.add_field(f"{y['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     async for i in bot.rest.fetch_my_guilds():
         guild = i.id
         channels = await bot.rest.fetch_guild_channels(guild)
@@ -129,7 +133,10 @@ async def today(ctx):
         if i not in cms:
             embed.add_field(f"{y['fractals'][i]['name']} (lv.{y['fractals'][i]['level']})", " - ".join(assign_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     for loop_count, i in enumerate(cms):
-        embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        if i in y['rotation'][get_rotation()]:
+            embed.add_field(f"{y['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     await ctx.respond(embed)
 
 
@@ -138,6 +145,13 @@ async def today(ctx):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def tomorrow(ctx):
     tomorrow_instab=get_day_of_year()+1
+    if tomorrow_instab == 366:
+        if calendar.isleap(date.today().year):
+            pass
+        else:
+            tomorrow_instab -= 365
+    elif tomorrow_instab > 365:
+        tomorrow_instab -= 365
     get_instabs(tomorrow_instab)
     get_cm_instabs(tomorrow_instab)
     assign_names(tomorrow_instab)
@@ -148,7 +162,10 @@ async def tomorrow(ctx):
         if i not in cms:
             embed.add_field(f"{y['fractals'][i]['name']} (lv.{y['fractals'][i]['level']})", " - ".join(assign_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     for loop_count, i in enumerate(cms):
-        embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        if i in y['rotation'][get_rotation()+1]:
+            embed.add_field(f"{y['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     await ctx.respond(embed)
     
 
@@ -161,6 +178,10 @@ async def in_x(ctx):
     while rotation_num >= 15:
         rotation_num -= 15
     in_x=get_day_of_year()+ctx.options.days
+    if in_x > 365 and calendar.isleap(date.today().year) == False:
+        in_x -= 365
+    elif in_x > 366 and calendar.isleap(date.today().year) == True:
+        in_x -= 366
     get_instabs(in_x)
     get_cm_instabs(in_x)
     assign_names(in_x)
@@ -171,9 +192,14 @@ async def in_x(ctx):
         if i not in cms:
             embed.add_field(f"{y['fractals'][i]['name']} (lv.{y['fractals'][i]['level']})", " - ".join(assign_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     for loop_count, i in enumerate(cms):
-        embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        if i in y['rotation'][rotation_num]:
+            embed.add_field(f"{y['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{y['fractals'][i]['name']}"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     await ctx.respond(embed)
 
+
+# Try to shorten this mess of a code for filter command in future
 
 @bot.command
 @lightbulb.option("level","Input the desired level to be filtered",type=int)
@@ -213,10 +239,20 @@ async def filter(ctx):
                     filter_message = filter_message[:-3]
                     filter_message += "\n"
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                 else:
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                     continue
             elif ctx.options.instability_1 != None or ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) or ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
@@ -226,14 +262,29 @@ async def filter(ctx):
                     filter_message = filter_message[:-3]
                     filter_message += "\n"
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                 else:
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                     continue
             else:
                 curr_date += timedelta(1)
-                day += 1
+                if day > 365 and calendar.isleap(date.today().year)==False:
+                    day -= 365
+                elif day > 366 and calendar.isleap(date.today().year)==True:
+                    day -= 366
+                else:
+                    day += 1
                 continue
         await ctx.respond(filter_message) 
     else:
@@ -241,7 +292,12 @@ async def filter(ctx):
             if ctx.options.instability_1 != None and ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) and ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                     continue
                 else:
                     filter_message += f"**{curr_date}**:\t"
@@ -250,11 +306,21 @@ async def filter(ctx):
                     filter_message = filter_message[:-3]
                     filter_message += "\n"
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
             elif ctx.options.instability_1 != None or ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(ctx.options.level,day) or ctx.options.instability_2 in filter_instabs(ctx.options.level,day):
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
                     continue
                 else:
                     filter_message += f"**{curr_date}**:\t"
@@ -263,7 +329,12 @@ async def filter(ctx):
                     filter_message = filter_message[:-3]
                     filter_message += "\n"
                     curr_date += timedelta(1)
-                    day += 1
+                    if day > 365 and calendar.isleap(date.today().year)==False:
+                        day -= 365
+                    elif day > 366 and calendar.isleap(date.today().year)==True:
+                        day -= 366
+                    else:
+                        day += 1
             else:
                 filter_message += f"**{curr_date}**:\t"
                 for j in filter_instabs(ctx.options.level,day):
@@ -271,7 +342,12 @@ async def filter(ctx):
                 filter_message = filter_message[:-3]
                 filter_message += "\n"
                 curr_date += timedelta(1)
-                day += 1
+                if day > 365 and calendar.isleap(date.today().year)==False:
+                    day -= 365
+                elif day > 366 and calendar.isleap(date.today().year)==True:
+                    day -= 366
+                else:
+                    day += 1
         await ctx.respond(filter_message)   
     
 

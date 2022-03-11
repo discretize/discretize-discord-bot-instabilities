@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-bot = lightbulb.BotApp(token = os.getenv('DISCORD_TOKEN'))
+bot = lightbulb.BotApp(token = os.getenv('BOT_TOKEN'))
 
 # Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
 

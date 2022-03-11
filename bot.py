@@ -28,8 +28,10 @@ cms=[8,9,20]
 
 help_command = """```md\nDiscretize [dT] Bot - Help menu
 Bot now includes integrated slash commands. To ease use, you can tab or click options
-\t - /today - Shows the instabilities for today\n\t - /tomorrow - Shows the instabilities for tomorrow
-\t - /in x - Shows the instabilities in x days\n\t - /filter <level> <with_without> <instability_1> <instability_2>
+\t - /today - Shows the instabilities for today
+\t - /tomorrow - Shows the instabilities for tomorrow
+\t - /in x - Shows the instabilities in x days
+\t - /filter <level> <with_without> <instability_1> <instability_2>
 If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 01:01```"""
 
 def get_day_of_year():
@@ -99,7 +101,57 @@ def daily_instabs():
             embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
         else:
             embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(today_instabs)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    return(embed)
+    return embed
+
+def tomorrow_instabilities():
+    tomorrow_instab=get_day_of_year()+1
+    if tomorrow_instab == 366:
+        if calendar.isleap(date.today().year):
+            pass
+        else:
+            tomorrow_instab -= 365
+    elif tomorrow_instab > 365:
+        tomorrow_instab -= 365
+    get_instabs(tomorrow_instab)
+    get_cm_instabs(tomorrow_instab)
+    assign_names(tomorrow_instab)
+    assign_cm_names(tomorrow_instab)
+    embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(1)}",colour="#00cccc")
+    embed.set_thumbnail("https://discretize.eu/logo.png")
+    for loop_count, i in enumerate(fractal_data['rotation'][get_rotation()+1]):
+        if i not in cms:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+    for loop_count, i in enumerate(cms):
+        if i in fractal_data['rotation'][get_rotation()+1]:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+    return embed
+
+def in_x_instabilities(days):
+    rotation_num = get_rotation()+days
+    while rotation_num >= 15:
+        rotation_num -= 15
+    in_x=get_day_of_year()+days
+    if in_x > 365 and calendar.isleap(date.today().year) == False:
+        in_x -= 365
+    elif in_x > 366 and calendar.isleap(date.today().year) == True:
+        in_x -= 366
+    get_instabs(in_x)
+    get_cm_instabs(in_x)
+    assign_names(in_x)
+    assign_cm_names(in_x)
+    embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(days)}",colour="#00cccc")
+    embed.set_thumbnail("https://discretize.eu/logo.png")
+    for loop_count, i in enumerate(fractal_data['rotation'][rotation_num]):
+        if i not in cms:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+    for loop_count, i in enumerate(cms):
+        if i in fractal_data['rotation'][rotation_num]:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+        else:
+            embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+    return embed
 
 @bot.listen(hikari.StartedEvent) # event in hikari
 async def bot_started(event):
@@ -136,29 +188,7 @@ async def today(ctx):
 @lightbulb.command("tomorrow","Shows instabilities for tomorrow")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def tomorrow(ctx):
-    tomorrow_instab=get_day_of_year()+1
-    if tomorrow_instab == 366:
-        if calendar.isleap(date.today().year):
-            pass
-        else:
-            tomorrow_instab -= 365
-    elif tomorrow_instab > 365:
-        tomorrow_instab -= 365
-    get_instabs(tomorrow_instab)
-    get_cm_instabs(tomorrow_instab)
-    assign_names(tomorrow_instab)
-    assign_cm_names(tomorrow_instab)
-    embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(1)}",colour="#00cccc")
-    embed.set_thumbnail("https://discretize.eu/logo.png")
-    for loop_count, i in enumerate(fractal_data['rotation'][get_rotation()+1]):
-        if i not in cms:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    for loop_count, i in enumerate(cms):
-        if i in fractal_data['rotation'][get_rotation()+1]:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-        else:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(tomorrow_instab)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    await ctx.respond(embed)
+    await ctx.respond(tomorrow_instabilities())
     
 
 @bot.command
@@ -166,29 +196,7 @@ async def tomorrow(ctx):
 @lightbulb.command("in","Shows instabilities in x days")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def in_x(ctx):
-    rotation_num = get_rotation()+ctx.options.days
-    while rotation_num >= 15:
-        rotation_num -= 15
-    in_x=get_day_of_year()+ctx.options.days
-    if in_x > 365 and calendar.isleap(date.today().year) == False:
-        in_x -= 365
-    elif in_x > 366 and calendar.isleap(date.today().year) == True:
-        in_x -= 366
-    get_instabs(in_x)
-    get_cm_instabs(in_x)
-    assign_names(in_x)
-    assign_cm_names(in_x)
-    embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(ctx.options.days)}",colour="#00cccc")
-    embed.set_thumbnail("https://discretize.eu/logo.png")
-    for loop_count, i in enumerate(fractal_data['rotation'][rotation_num]):
-        if i not in cms:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    for loop_count, i in enumerate(cms):
-        if i in fractal_data['rotation'][rotation_num]:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-        else:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    await ctx.respond(embed)
+    await ctx.respond(in_x_instabilities(ctx.options.days))
 
 
 # Try to shorten this mess of a code for filter command in future

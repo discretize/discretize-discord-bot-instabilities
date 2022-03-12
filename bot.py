@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 bot = lightbulb.BotApp(token = os.getenv('BOT_TOKEN'))
+tasks.load(bot)
 
 # Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
 
@@ -118,7 +119,9 @@ async def bot_started(event):
 
 # Will remove this notification after a month or two
 @bot.listen()
-async def temporary_info(event: hikari.GuildMessageCreateEvent):
+async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
+    if event.is_bot or not event.content:
+        return    
     legacy_commands = ["!today","!tomorrow","!in","!filter","!t4s","!help"]
     for i in legacy_commands:
         if event.content.startswith(f"{i}"):
@@ -126,7 +129,7 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent):
             
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
-@tasks.task(CronTrigger("0 1 * * *"),auto_start=True)
+@tasks.task(CronTrigger("0 0 * * *"),auto_start=True) # cron is using UTC time
 async def daily_instabilities_broadcast():
     async for i in bot.rest.fetch_my_guilds():
         guild = i.id
@@ -316,5 +319,4 @@ async def filter(ctx):
         await ctx.respond(filter_message)   
     
 
-tasks.load(bot)
 bot.run()

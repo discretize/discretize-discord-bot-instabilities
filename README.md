@@ -15,7 +15,7 @@ Asides from providing the data when asked the bot will also notify every server 
 
 ## Adding the bot to your own discord server
 
-Click [here](https://discord.com/api/oauth2/authorize?client_id=502097175581556736&permissions=274877975552&scope=bot)
+Click [here](https://discord.com/api/oauth2/authorize?client_id=502097175581556736&permissions=274877975552&scope=applications.commands%20bot)
 
 ## Credits
 

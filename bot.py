@@ -48,21 +48,24 @@ def get_rotation():
         
 
 
-def get_instabs(day):
+def get_instabs(day,day_diff):
+    rotation_number = get_rotation()+day_diff
+    while rotation_number >= 15:
+        rotation_number -= 15
     todays_instabilities = []
-    for i in fractal_data['rotation'][get_rotation()]: 
+    for i in fractal_data['rotation'][rotation_number]: 
         todays_instabilities.append(instability_data['instabilities'][f"{fractal_data['fractals'][i]['level']}"][day])
         
     todays_instabilities = list(chain(*todays_instabilities))
     return todays_instabilities
     
-def assign_names(day):
+def assign_names(day,day_diff):
     instab_names = []
-    for i in get_instabs(day):
+    for i in get_instabs(day,day_diff):
         instab_names.append(instability_data['instability_names'][i])
     return instab_names
 
-    
+      
 def get_cm_instabs(day):
     cm_instabilities = []
     for i in cms:
@@ -92,18 +95,16 @@ def send_instabilities(days=0):
         rotation_num -= 15
     in_x=get_day_of_year()+days
     if in_x > 365 and calendar.isleap(date.today().year) == False:
-        in_x -= 365
+        while in_x > 365:
+            in_x -= 365
     elif in_x > 366 and calendar.isleap(date.today().year) == True:
-        in_x -= 366
-    get_instabs(in_x)
-    get_cm_instabs(in_x)
-    assign_names(in_x)
-    assign_cm_names(in_x)
+        while in_x > 366:
+            in_x -= 366 
     embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(days)}",colour="#00cccc")
     embed.set_thumbnail("https://discretize.eu/logo.png")
     for loop_count, i in enumerate(fractal_data['rotation'][rotation_num]):
         if i not in cms:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
+            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(in_x,days)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
     for loop_count, i in enumerate(cms):
         if i in fractal_data['rotation'][rotation_num]:
             embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))

@@ -132,12 +132,15 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
 
 @tasks.task(CronTrigger("0 0 * * *"),auto_start=True) # cron is using UTC time
 async def daily_instabilities_broadcast():
-    async for i in bot.rest.fetch_my_guilds():
-        guild = i.id
-        channels = await bot.rest.fetch_guild_channels(guild)
-        for j in channels:
-            if j.name == "instabilities":
-                await bot.rest.create_message(channel=j.id,content=send_instabilities())
+    reset = datetime.now().replace(hour=1, minute=0) # bandaid solution 
+    reset_end = datetime.now().replace(hour=1, minute=5)
+    if datetime.now() >= reset and datetime.now() <= reset_end: 
+        async for i in bot.rest.fetch_my_guilds():
+            guild = i.id
+            channels = await bot.rest.fetch_guild_channels(guild)
+            for j in channels:
+                if j.name == "instabilities":
+                    await bot.rest.create_message(channel=j.id,content=send_instabilities())
 
     
 @bot.command
@@ -319,5 +322,5 @@ async def filter(ctx):
                     day += 1
         await ctx.respond(filter_message)   
     
-
+       
 bot.run()

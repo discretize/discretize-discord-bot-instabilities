@@ -129,10 +129,10 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
             
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
-@tasks.task(CronTrigger("0 0 * * *"),auto_start=True) # cron is using UTC time
+@tasks.task(CronTrigger("0 0 * * *")) # cron is using UTC time
 async def daily_instabilities_broadcast():
-    reset = datetime.now().replace(hour=1, minute=0) # bandaid solution 
-    reset_end = datetime.now().replace(hour=1, minute=5)
+    reset = datetime.now().replace(hour=0, minute=59, second=0) # bandaid solution 
+    reset_end = datetime.now().replace(hour=1, minute=5, second=0)
     if datetime.now() >= reset and datetime.now() <= reset_end: 
         async for i in bot.rest.fetch_my_guilds():
             guild = i.id
@@ -141,6 +141,7 @@ async def daily_instabilities_broadcast():
                 if j.name == "instabilities":
                     await bot.rest.create_message(channel=j.id,content=send_instabilities())
 
+daily_instabilities_broadcast.start()
     
 @bot.command
 @lightbulb.command("help","Shows list of commands")

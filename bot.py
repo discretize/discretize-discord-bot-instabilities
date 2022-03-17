@@ -131,8 +131,8 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
 
 @tasks.task(CronTrigger("0 0 * * *")) # cron is using UTC time
 async def daily_instabilities_broadcast():
-    reset = datetime.now().replace(hour=0, minute=59, second=0) # bandaid solution 
-    reset_end = datetime.now().replace(hour=1, minute=5, second=0)
+    reset = datetime.now().replace(hour=23, minute=59, second=0) 
+    reset_end = datetime.now().replace(hour=0, minute=5, second=0)
     if datetime.now() >= reset and datetime.now() <= reset_end: 
         async for i in bot.rest.fetch_my_guilds():
             guild = i.id
@@ -322,11 +322,5 @@ async def filter(ctx):
                     day += 1
         await ctx.respond(filter_message)   
 
-@bot.command
-@lightbulb.command("time","Show time")
-@lightbulb.implements(lightbulb.SlashCommand)
-async def time(ctx):
-    t = datetime.now()    
-    await ctx.respond(t)
     
 bot.run()

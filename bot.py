@@ -321,6 +321,12 @@ async def filter(ctx):
                 else:
                     day += 1
         await ctx.respond(filter_message)   
+
+@bot.command
+@lightbulb.command("time","Show time")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def time(ctx):
+    t = datetime.now()    
+    await ctx.respond(t)
     
-       
 bot.run()

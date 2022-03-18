@@ -5,6 +5,7 @@ from lightbulb.ext.tasks import CronTrigger
 import json
 import os
 import calendar
+import pytz
 from datetime import date, datetime, timedelta
 from itertools import chain
 from dotenv import load_dotenv
@@ -85,7 +86,7 @@ def filter_instabs(level,day):
     for i in filtered_instabs:
         names.append(instability_data['instability_names'][i])
     return names
-
+        
 def send_instabilities(days=0):
     rotation_num = get_rotation()+days
     while rotation_num >= 15:
@@ -129,11 +130,11 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
             
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
-@tasks.task(CronTrigger("0 0 * * *")) # cron is using UTC time
+@tasks.task(CronTrigger("1 0 * * *")) # cron is using UTC time
 async def daily_instabilities_broadcast():
-    reset = datetime.now().replace(hour=23, minute=59, second=0) 
-    reset_end = datetime.now().replace(hour=0, minute=5, second=0)
-    if datetime.now() >= reset and datetime.now() <= reset_end: 
+    reset = datetime.now().replace(hour=0, minute=0, second=0,tzinfo=pytz.utc) 
+    reset_end = datetime.now().replace(hour=1, minute=5, second=0,tzinfo=pytz.utc)
+    if datetime.now(pytz.utc) >= reset and datetime.now(pytz.utc) <= reset_end: 
         async for i in bot.rest.fetch_my_guilds():
             guild = i.id
             channels = await bot.rest.fetch_guild_channels(guild)

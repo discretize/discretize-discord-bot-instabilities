@@ -34,7 +34,7 @@ Bot now includes integrated slash commands. To ease use, you can tab or click op
 \t - /tomorrow - Shows the instabilities for tomorrow
 \t - /in x - Shows the instabilities in x days
 \t - /filter <level> <with_without> <instability_1> <instability_2>
-If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 01:00```"""
+If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 02:00```"""
 
 def get_day_of_year():
     day_of_year = datetime.now().timetuple().tm_yday
@@ -43,10 +43,8 @@ def get_day_of_year():
 def get_rotation():
     current_rotation = date(2022, 2, 28) # 28th of February 2022
     rotation = (date.today()-current_rotation).days
-    while rotation > 15:
-        rotation -= 15
+    rotation %= 15
     return rotation
-        
 
 
 def get_instabs(day):
@@ -130,10 +128,10 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
             
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
 
-@tasks.task(CronTrigger("1 0 * * *")) # cron is using UTC time
+@tasks.task(CronTrigger("1 0 * * *")) # UTC time
 async def daily_instabilities_broadcast():
     reset = datetime.now().replace(hour=0, minute=0, second=0,tzinfo=pytz.utc) 
-    reset_end = datetime.now().replace(hour=1, minute=5, second=0,tzinfo=pytz.utc)
+    reset_end = datetime.now().replace(hour=0, minute=5, second=0,tzinfo=pytz.utc)
     if datetime.now(pytz.utc) >= reset and datetime.now(pytz.utc) <= reset_end: 
         async for i in bot.rest.fetch_my_guilds():
             guild = i.id

@@ -2,113 +2,17 @@ import hikari
 import lightbulb
 from lightbulb.ext import tasks
 from lightbulb.ext.tasks import CronTrigger
-import json
 import os
 import calendar
 import pytz
 from datetime import date, datetime, timedelta
-from itertools import chain
+from commands import *
 from dotenv import load_dotenv
 
 load_dotenv()
 
 bot = lightbulb.BotApp(token = os.getenv('BOT_TOKEN'))
 tasks.load(bot)
-
-# Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
-
-# Json file containing the instability data
-with open("data.json","r") as file:
-    instability_data = json.load(file)
-
-# Json file for fractal names and rotation indexing    
-with open("mappings.json","r") as file:
-    fractal_data = json.load(file)
-
-# CM indexes in mappings.json   
-cms=[8,9,20]
-
-help_command = """```md\nDiscretize [dT] Bot - Help menu
-Bot now includes integrated slash commands. To ease use, you can tab or click options
-\t - /today - Shows the instabilities for today
-\t - /tomorrow - Shows the instabilities for tomorrow
-\t - /in x - Shows the instabilities in x days
-\t - /filter <level> <with_without> <instability_1> <instability_2>
-If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 02:00```"""
-
-def get_day_of_year():
-    day_of_year = datetime.now().timetuple().tm_yday
-    return day_of_year
-
-def get_rotation():
-    current_rotation = date(2022, 2, 28) # 28th of February 2022
-    rotation = (date.today()-current_rotation).days
-    rotation %= 15
-    return rotation
-
-
-def get_instabs(day):
-    todays_instabilities = []
-    for i in fractal_data['rotation'][get_rotation()]: 
-        todays_instabilities.append(instability_data['instabilities'][f"{fractal_data['fractals'][i]['level']}"][day])
-        
-    todays_instabilities = list(chain(*todays_instabilities))
-    return todays_instabilities
-    
-def assign_names(day):
-    instab_names = []
-    for i in get_instabs(day):
-        instab_names.append(instability_data['instability_names'][i])
-    return instab_names
-
-    
-def get_cm_instabs(day):
-    cm_instabilities = []
-    for i in cms:
-        cm_instabilities.append(instability_data['instabilities'][f"{fractal_data['fractals'][i]['level']}"][day])
-        
-    cm_instabilities = list(chain(*cm_instabilities))
-    return cm_instabilities
-    
-def assign_cm_names(day):
-    cm_instab_names = []
-    for i in get_cm_instabs(day):
-        cm_instab_names.append(instability_data['instability_names'][i])
-    return cm_instab_names
-
-def filter_instabs(level,day):
-    filtered_instabs = []
-    names = []
-    filtered_instabs.append(instability_data['instabilities'][f"{level}"][day-1])
-    filtered_instabs = list(chain(*filtered_instabs))
-    for i in filtered_instabs:
-        names.append(instability_data['instability_names'][i])
-    return names
-        
-def send_instabilities(days=0):
-    rotation_num = get_rotation()+days
-    while rotation_num >= 15:
-        rotation_num -= 15
-    in_x=get_day_of_year()+days
-    if in_x > 365 and calendar.isleap(date.today().year) == False:
-        in_x -= 365
-    elif in_x > 366 and calendar.isleap(date.today().year) == True:
-        in_x -= 366
-    get_instabs(in_x)
-    get_cm_instabs(in_x)
-    assign_names(in_x)
-    assign_cm_names(in_x)
-    embed = hikari.Embed(title=f"Instabilities for {date.today()+timedelta(days)}",colour="#00cccc")
-    embed.set_thumbnail("https://discretize.eu/logo.png")
-    for loop_count, i in enumerate(fractal_data['rotation'][rotation_num]):
-        if i not in cms:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (lv.{fractal_data['fractals'][i]['level']})", " - ".join(assign_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    for loop_count, i in enumerate(cms):
-        if i in fractal_data['rotation'][rotation_num]:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']} (daily)"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-        else:
-            embed.add_field(f"{fractal_data['fractals'][i]['name']}"," - ".join(assign_cm_names(in_x)[3 * (loop_count+1)-3 : 3 * (loop_count+1)]))
-    return embed
 
 @bot.listen(hikari.StartedEvent) # event in hikari
 async def bot_started(event):
@@ -175,30 +79,15 @@ async def in_x(ctx):
 @bot.command
 @lightbulb.option("level","Input the desired level to be filtered",type=int)
 @lightbulb.option("with_without","Select whether you want to include or exclude instabilities",required=False,default="without",choices=["with","without"])
-@lightbulb.option("instability_2","Input the desired instability to filter out",required=False,choices=["Adrenaline Rush","Afflicted","Boon Overload","Flux Bomb","Fractal Vindicators","Frailty","Hamstrung","Last Laugh","Mists Convergence","No Pain, No Gain","Outflanked","Social Awkwardness","Stick Together","Sugar Rush","Toxic Sickness","Toxic Trail","Vengeance","We Bleed Fire"])
-@lightbulb.option("instability_1","Input the desired instability to filter out",required=False,choices=["Adrenaline Rush","Afflicted","Boon Overload","Flux Bomb","Fractal Vindicators","Frailty","Hamstrung","Last Laugh","Mists Convergence","No Pain, No Gain","Outflanked","Social Awkwardness","Stick Together","Sugar Rush","Toxic Sickness","Toxic Trail","Vengeance","We Bleed Fire"])
+@lightbulb.option("instability_2","Input the desired instability to filter out",required=False,choices=instablist)
+@lightbulb.option("instability_1","Input the desired instability to filter out",required=False,choices=instablist)
 @lightbulb.command("filter","Filters the desired level with or without instabilities")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def filter(ctx):
     filter_message = ""
     curr_date = date.today()
     day = get_day_of_year()+1
-    if ctx.options.instability_1 != None and ctx.options.instability_2 != None and ctx.options.with_without == "without":
-        filter_message += f"Filtered instabilities for **{ctx.options.level}** without **{ctx.options.instability_1}** and **{ctx.options.instability_2}** instabilities:\n"
-    elif (ctx.options.instability_1 != None or ctx.options.instability_2 != None) and ctx.options.with_without == "without":
-        if ctx.options.instability_1 != None:
-            filter_message += f"Filtered instabilities for **{ctx.options.level}** without the **{ctx.options.instability_1}** instability:\n"
-        else:
-            filter_message += f"Filtered instabilities for **{ctx.options.level}** without the **{ctx.options.instability_2}** instability:\n"
-    elif ctx.options.instability_1 != None and ctx.options.instability_2 != None and ctx.options.with_without == "with":
-        filter_message += f"Filtered instabilities for **{ctx.options.level}** with **{ctx.options.instability_1}** and **{ctx.options.instability_2}** instabilities:\n"
-    elif (ctx.options.instability_1 != None or ctx.options.instability_2 != None) and ctx.options.with_without == "with":
-        if ctx.options.instability_1 != None:
-            filter_message += f"Filtered instabilities for **{ctx.options.level}** with the **{ctx.options.instability_1}** instability:\n"
-        else:
-            filter_message += f"Filtered instabilities for **{ctx.options.level}** with the **{ctx.options.instability_2}** instability:\n"
-    else:
-        filter_message += f"Filtered instabilities for **{ctx.options.level}**:\n"
+    filter_message += f"Filtered instabilities for **{ctx.options.level}**:\n"
     
     if ctx.options.with_without == "with":
         for i in range(30):

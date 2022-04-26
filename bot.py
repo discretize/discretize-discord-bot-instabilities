@@ -53,8 +53,20 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     if "!logs" not in event.content:
         return
 
+    await event.get_channel().trigger_typing()
+
     # order of the logs
-    encounter_order = [17021, 17028, 16948, 17632, 17949, 17759, 23254, 23254]
+    encounter_order = [
+        {"id": 17021, "label": "MAMA"},
+        {"id": 17028, "label": "Siax"},
+        {"id": 16948, "label": "Ensolyss"},
+        {"id": 17632, "label": "Skorvald"},
+        {"id": 17949, "label": "Artsariiv"},
+        {"id": 17759, "label": "Arkk"},
+        {"id": 23254, "label": "Light Ai"},
+        {"id": 23254, "label": "Dark Ai"},
+    ]
+    encounter_ids = list(map(lambda encounter: encounter["id"], encounter_order))
 
     def get_order(log_element):
         _log = log_element["log_content"]
@@ -63,15 +75,30 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
             if "Dark" in _log["fightName"]:
                 return 7
             return 6
-        return encounter_order.index(_log["triggerID"])
+        if _log["triggerID"] in encounter_ids:
+            return encounter_ids.index(_log["triggerID"])
+        return -1
 
     def is_cm_clear(log_elements):
-        copy = encounter_order
+        copy = list(map(lambda encounter: encounter["id"], encounter_order))
         for _log in log_elements:
             trigger_id = _log["log_content"]["triggerID"]
-            if trigger_id in encounter_order:
-                encounter_order.remove(_log["log_content"]["triggerID"])
+            if trigger_id in copy:
+                copy.remove(_log["log_content"]["triggerID"])
         return len(copy) == 0
+
+    def get_encounter_name(trigger_id: int, encounter_name: str) -> str:
+        if trigger_id != 23254:
+            if trigger_id in encounter_ids:
+                return next(x for x in encounter_order if x["id"] == trigger_id)["label"]
+            else:
+                return encounter_name
+        else:
+            # AI special handling
+            if "Dark" in encounter_name:
+                return "Dark Ai"
+            else:
+                return "Light Ai"
 
     # find all dps.report urls in the message
     dps_report_urls = re.findall(r"https://dps\.report/[a-zA-Z-\d_]*", event.content)
@@ -101,19 +128,24 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     if is_cm_clear(logs):
         embed.set_footer(f"CMs cleared in {finish_time-start_time}")
 
-    for i in range(len(logs)):
-        log = logs[i]
-        name = log["log_content"]["fightName"]
-        duration = log["log_content"]["duration"]
-        embed.add_field(
-            f"{name}", f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})'
-        )
-
     players = list(
         map(lambda player: player["account"], logs[0]["log_content"]["players"])
     )
 
-    embed.add_field("===== Players =====", ", ".join(players))
+    embed.add_field(":busts_in_silhouette: Players", ", ".join(players))
+
+    for i in range(len(logs)):
+        log = logs[i]
+        name = get_encounter_name(
+            trigger_id=log["log_content"]["triggerID"],
+            encounter_name=log["log_content"]["fightName"],
+        )
+        duration = log["log_content"]["duration"]
+        embed.add_field(
+            f"{name}",
+            f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})',
+            inline=True,
+        )
 
     await event.message.delete()
     await event.message.respond(embed)

@@ -84,6 +84,9 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
 
     logs.sort(key=get_order)
 
+    if len(logs) == 0:
+        return
+
     start_time = datetime.strptime(
         logs[0]["log_content"]["timeStart"] + "00", "%Y-%m-%d %H:%M:%S %z"
     )

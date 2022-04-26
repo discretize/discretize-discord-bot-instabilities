@@ -88,14 +88,10 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         return
 
     start_time = min(map(lambda elem: elem["log_content"]["timeStart"] + "00", logs))
-    start_time = datetime.strptime(
-        start_time, "%Y-%m-%d %H:%M:%S %z"
-    )
+    start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S %z")
 
     finish_time = max(map(lambda elem: elem["log_content"]["timeEnd"] + "00", logs))
-    finish_time = datetime.strptime(
-        finish_time, "%Y-%m-%d %H:%M:%S %z"
-    )
+    finish_time = datetime.strptime(finish_time, "%Y-%m-%d %H:%M:%S %z")
 
     embed = hikari.Embed(
         title=f"Logs - {start_time.strftime('%Y-%m-%d')}", colour="#00cccc"
@@ -105,13 +101,20 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     if is_cm_clear(logs):
         embed.set_footer(f"CMs cleared in {finish_time-start_time}")
 
-    for log in logs:
+    for i in range(len(logs)):
+        log = logs[i]
         name = log["log_content"]["fightName"]
         duration = log["log_content"]["duration"]
         embed.add_field(
-            f"{name} - {duration}",
-            log["log_link"],
+            f"{name}", f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})'
         )
+
+    players = list(
+        map(lambda player: player["account"], logs[0]["log_content"]["players"])
+    )
+
+    embed.add_field("===== Players =====", ", ".join(players))
+
     await event.message.delete()
     await event.message.respond(embed)
 

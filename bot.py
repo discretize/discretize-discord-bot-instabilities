@@ -9,7 +9,9 @@ from datetime import date, datetime, timedelta
 from commands import *
 from dotenv import load_dotenv
 import re
-import urllib.request
+import requests
+import json
+from datetime import datetime
 
 
 load_dotenv()
@@ -40,6 +42,72 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
             await event.message.respond(
                 "The prefix commands have been discontinued, please use slash (/today, /tomorrow, /in, /filter)\nFor more info type /help"
             )
+
+
+@bot.listen(hikari.GuildMessageCreateEvent)
+async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
+
+    if event.is_bot or not event.content:
+        return
+
+    if "!logs" not in event.content:
+        return
+
+    # order of the logs
+    encounter_order = [17021, 17028, 16948, 17632, 17949, 17759, 23254, 23254]
+
+    def get_order(log_element):
+        _log = log_element["log_content"]
+        # special case for ai, thanks arenanet :peepoSpecial:
+        if _log["triggerID"] == 23254:
+            if "Dark" in _log["fightName"]:
+                return 7
+            return 6
+        return encounter_order.index(_log["triggerID"])
+
+    def is_cm_clear(log_elements):
+        copy = encounter_order
+        for _log in log_elements:
+            trigger_id = _log["log_content"]["triggerID"]
+            if trigger_id in encounter_order:
+                encounter_order.remove(_log["log_content"]["triggerID"])
+        return len(copy) == 0
+
+    # find all dps.report urls in the message
+    dps_report_urls = re.findall(r"https://dps\.report/[a-zA-Z-\d_]*", event.content)
+    logs = []
+    for log_link in dps_report_urls:
+        permalink = log_link.replace("https://dps.report/", "")
+        url = f"https://dps.report/getJson?permalink={permalink}"
+        req = requests.get(url)
+        logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
+
+    logs.sort(key=get_order)
+
+    start_time = datetime.strptime(
+        logs[0]["log_content"]["timeStart"] + "00", "%Y-%m-%d %H:%M:%S %z"
+    )
+    finish_time = datetime.strptime(
+        logs[-1]["log_content"]["timeEnd"] + "00", "%Y-%m-%d %H:%M:%S %z"
+    )
+
+    embed = hikari.Embed(
+        title=f"Logs - {start_time.strftime('%Y-%m-%d')}", colour="#00cccc"
+    )
+    embed.set_thumbnail("https://discretize.eu/logo.png")
+
+    if is_cm_clear(logs):
+        embed.set_footer(f"CMs cleared in {finish_time-start_time}")
+
+    for log in logs:
+        name = log["log_content"]["fightName"]
+        duration = log["log_content"]["duration"]
+        embed.add_field(
+            f"{name} - {duration}",
+            log["log_link"],
+        )
+    await event.message.delete()
+    await event.message.respond(embed)
 
 
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel

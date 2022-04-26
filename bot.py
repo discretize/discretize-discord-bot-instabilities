@@ -113,9 +113,11 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
 
     logs.sort(key=get_order)
 
+    # only do something if logs were found in the text
     if len(logs) == 0:
         return
 
+    # calculate the total duration
     start_time = min(map(lambda elem: elem["log_content"]["timeStart"] + "00", logs))
     start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S %z")
 
@@ -127,14 +129,27 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     )
     embed.set_thumbnail("https://discretize.eu/logo.png")
 
+    # only display the footer in case for each cm boss there is one log present
     if is_cm_clear(logs):
         embed.set_footer(f"CMs cleared in {finish_time-start_time}")
 
-    players = list(
-        map(lambda player: player["account"], logs[0]["log_content"]["players"])
+    # iterate over the logs and collect player related data
+    players = []
+    for log in logs:
+        log_players = log["log_content"]["players"]
+        for player in log_players:
+            existing_players = list(map(lambda p: p["account"], players))
+            if player["account"] not in existing_players:
+                players.append({"account": player["account"], "specializations": [player["profession"]]})
+            else:
+                to_edit = next((x for x in players if x["account"] == player["account"]), None)
+                to_edit["specializations"].append(player["profession"])
+
+    embed.add_field(
+        ":busts_in_silhouette: Players",
+        ", ".join(list(map(lambda p: f'{p["account"]} ({",".join(list(set(p["specializations"])))})', players))),
     )
 
-    embed.add_field(":busts_in_silhouette: Players", ", ".join(players))
 
     for i in range(len(logs)):
         log = logs[i]

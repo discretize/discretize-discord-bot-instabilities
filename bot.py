@@ -90,7 +90,9 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     def get_encounter_name(trigger_id: int, encounter_name: str) -> str:
         if trigger_id != 23254:
             if trigger_id in encounter_ids:
-                return next(x for x in encounter_order if x["id"] == trigger_id)["label"]
+                return next(x for x in encounter_order if x["id"] == trigger_id)[
+                    "label"
+                ]
             else:
                 return encounter_name
         else:

@@ -87,11 +87,14 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     if len(logs) == 0:
         return
 
+    start_time = min(map(lambda elem: elem["log_content"]["timeStart"] + "00", logs))
     start_time = datetime.strptime(
-        logs[0]["log_content"]["timeStart"] + "00", "%Y-%m-%d %H:%M:%S %z"
+        start_time, "%Y-%m-%d %H:%M:%S %z"
     )
+
+    finish_time = max(map(lambda elem: elem["log_content"]["timeEnd"] + "00", logs))
     finish_time = datetime.strptime(
-        logs[-1]["log_content"]["timeEnd"] + "00", "%Y-%m-%d %H:%M:%S %z"
+        finish_time, "%Y-%m-%d %H:%M:%S %z"
     )
 
     embed = hikari.Embed(

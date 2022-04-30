@@ -50,15 +50,15 @@ def get_day_of_year():
     return day_of_year
 
 
-def get_rotation():
+def get_rotation(day=0):
     current_rotation = date(2022, 2, 28)  # 28th of February 2022
-    rotation = ((date.today() - current_rotation).days) % 15
+    rotation = (((date.today()+timedelta(day)) - current_rotation).days) % 15
     return rotation
 
 
 def get_instabs(day):
     todays_instabilities = []
-    for i in fractal_data["rotation"][get_rotation()]:
+    for i in fractal_data["rotation"][get_rotation(day)]:
         todays_instabilities.append(
             instability_data["instabilities"][
                 f"{fractal_data['fractals'][i]['level']}"
@@ -107,7 +107,7 @@ def filter_instabs(level, day):
 
 
 def send_instabilities(days=0):
-    rotation_num = (get_rotation() + days) % 15
+    rotation_num = get_rotation(days) % 15
     in_x = get_day_of_year() + days
     if in_x > 365 and calendar.isleap(date.today().year) == False:
         in_x %= 365

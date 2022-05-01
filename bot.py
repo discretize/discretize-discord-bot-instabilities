@@ -13,7 +13,6 @@ import requests
 import json
 from datetime import datetime
 
-
 load_dotenv()
 
 bot = lightbulb.BotApp(token=os.getenv("BOT_TOKEN"))
@@ -46,7 +45,6 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
 
 @bot.listen(hikari.GuildMessageCreateEvent)
 async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
-
     if event.is_bot or not event.content:
         return
 
@@ -107,9 +105,10 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
     logs = []
     for log_link in dps_report_urls:
         permalink = log_link.replace("https://dps.report/", "")
-        url = f"https://dps.report/getJson?permalink={permalink}"
-        req = requests.get(url)
-        logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
+        if len(permalink) >= 5:
+            url = f"https://dps.report/getJson?permalink={permalink}"
+            req = requests.get(url)
+            logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
 
     logs.sort(key=get_order)
 
@@ -131,7 +130,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
 
     # only display the footer in case for each cm boss there is one log present
     if is_cm_clear(logs):
-        embed.set_footer(f"CMs cleared in {finish_time-start_time}")
+        embed.set_footer(f"CMs cleared in {finish_time - start_time}")
 
     # iterate over the logs and collect player related data
     players = []
@@ -150,7 +149,6 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         ", ".join(list(map(lambda p: f'{p["account"]} ({",".join(list(set(p["specializations"])))})', players))),
     )
 
-
     for i in range(len(logs)):
         log = logs[i]
         name = get_encounter_name(
@@ -163,9 +161,14 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
             f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})',
             inline=True,
         )
-
-    await event.message.delete()
-    await event.message.respond(embed)
+    try:
+        await event.message.delete()
+    except Exception:
+        await event.get_channel().send("Requires permission to delete messages")
+    try:
+        await event.message.respond(embed)
+    except Exception:
+        await event.get_channel().send("Requires permission to embed messages")
 
 
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
@@ -252,7 +255,7 @@ async def filter(ctx):
         for i in range(30):
             if ctx.options.instability_1 != None and ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(
-                    ctx.options.level, day
+                        ctx.options.level, day
                 ) and ctx.options.instability_2 in filter_instabs(
                     ctx.options.level, day
                 ):
@@ -279,7 +282,7 @@ async def filter(ctx):
                     continue
             elif ctx.options.instability_1 != None or ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(
-                    ctx.options.level, day
+                        ctx.options.level, day
                 ) or ctx.options.instability_2 in filter_instabs(
                     ctx.options.level, day
                 ):
@@ -318,7 +321,7 @@ async def filter(ctx):
         for i in range(30):
             if ctx.options.instability_1 != None and ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(
-                    ctx.options.level, day
+                        ctx.options.level, day
                 ) and ctx.options.instability_2 in filter_instabs(
                     ctx.options.level, day
                 ):
@@ -345,7 +348,7 @@ async def filter(ctx):
                         day += 1
             elif ctx.options.instability_1 != None or ctx.options.instability_2 != None:
                 if ctx.options.instability_1 in filter_instabs(
-                    ctx.options.level, day
+                        ctx.options.level, day
                 ) or ctx.options.instability_2 in filter_instabs(
                     ctx.options.level, day
                 ):

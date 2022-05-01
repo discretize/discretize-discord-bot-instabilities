@@ -57,8 +57,14 @@ def get_rotation(day=0):
 
 
 def get_instabs(day):
+    if get_day_of_year() > day and calendar.isleap(date.today().year) == False:
+        rot_num = (get_day_of_year() + day) % 365
+    elif get_day_of_year() > day and calendar.isleap(date.today().year) == True:
+        rot_num = (get_day_of_year() + day) % 366
+    else:
+        rot_num = day - get_day_of_year()
     todays_instabilities = []
-    for i in fractal_data["rotation"][get_rotation(day)]:
+    for i in fractal_data["rotation"][get_rotation(rot_num)]:
         todays_instabilities.append(
             instability_data["instabilities"][
                 f"{fractal_data['fractals'][i]['level']}"

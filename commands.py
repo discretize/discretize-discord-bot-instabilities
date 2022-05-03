@@ -3,7 +3,7 @@ import json
 import calendar
 from datetime import date, datetime, timedelta
 from itertools import chain
-from dict import *
+from serverdb import *
 
 # Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
 

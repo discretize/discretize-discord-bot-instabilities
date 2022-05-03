@@ -43,6 +43,7 @@ Bot now includes integrated slash commands. To ease use, you can tab or click op
 \t - /tomorrow - Shows the instabilities for tomorrow
 \t - /in x - Shows the instabilities in x days
 \t - /filter <level> <with_without> <instability_1> <instability_2>
+\t - !logs - all logs that are in a message containing this command will be formatted pretty
 If channel #instabilities is created, the bot will auto broadcast new instabilities every day at 02:00```"""
 
 

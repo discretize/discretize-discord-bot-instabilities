@@ -3,6 +3,7 @@ import json
 import calendar
 from datetime import date, datetime, timedelta
 from itertools import chain
+from dict import *
 
 # Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
 
@@ -151,3 +152,10 @@ def send_instabilities(days=0):
                 ),
             )
     return embed
+
+def get_boss_emoji(name):
+    temp = ""
+    for i in spec_emojis.keys():
+        if name.split()[0] in i: # split for Ai naming
+            temp = f"{i}{spec_emojis[i]}"
+    return temp

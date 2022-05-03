@@ -12,6 +12,7 @@ import re
 import requests
 import json
 from datetime import datetime
+import dict
 
 load_dotenv()
 
@@ -139,14 +140,16 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         for player in log_players:
             existing_players = list(map(lambda p: p["account"], players))
             if player["account"] not in existing_players:
-                players.append({"account": player["account"], "specializations": [player["profession"]]})
+                players.append({"account": player["account"], "specializations": [f"<{spec}{spec_emojis[spec]}>" for spec in spec_emojis.keys() if player["profession"] in spec]})
             else:
                 to_edit = next((x for x in players if x["account"] == player["account"]), None)
-                to_edit["specializations"].append(player["profession"])
+                for i in spec_emojis.keys():
+                    if player["profession"] in i:
+                        to_edit["specializations"].append(f"<{i}{spec_emojis[i]}>")
 
     embed.add_field(
         ":busts_in_silhouette: Players",
-        ", ".join(list(map(lambda p: f'{p["account"]} ({",".join(list(set(p["specializations"])))})', players))),
+        ", ".join(sorted(list(map(lambda p: f'{p["account"]} ({",".join(list(set(p["specializations"])))})', players)))),
     )
 
     for i in range(len(logs)):
@@ -157,7 +160,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         )
         duration = log["log_content"]["duration"]
         embed.add_field(
-            f"{name}",
+            f"<{get_boss_emoji(name)}> {name}",
             f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})',
             inline=True,
         )

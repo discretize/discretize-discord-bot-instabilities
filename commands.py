@@ -5,7 +5,9 @@ from datetime import date, datetime, timedelta
 from itertools import chain
 from serverdb import *
 
-# Current rotation is 28th of February 2022 (day of EoD release). Rotation index 1
+#
+# Update rotation: 01/03/2023
+#
 
 # Json file containing the instability data
 with open("data.json", "r") as file:
@@ -53,7 +55,7 @@ def get_day_of_year():
 
 
 def get_rotation(day=0):
-    current_rotation = date(2022, 2, 28)  # 28th of February 2022
+    current_rotation = date(2023, 3, 1) 
     rotation = (((date.today()+timedelta(day)) - current_rotation).days) % 15
     return rotation
 

@@ -21,7 +21,7 @@
         { "name": "Urban Battleground", "id": 2941, "level": 85 }, 
         { "name": "Volcanic", "id": 2989, "level": 92 }, 
         { "name": "Sunqua Peak", "id": 5446, "level": 99, "cm": true },
-        { "name": "Silent Surf", "id": 0000, "level": 100, "cm": true }
+        { "name": "Silent Surf", "id": 1000, "level": 100, "cm": true }
     ],
 
 

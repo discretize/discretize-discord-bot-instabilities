@@ -55,7 +55,7 @@ def get_day_of_year():
 
 
 def get_rotation(day=0):
-    current_rotation = date(2023, 3, 1) 
+    current_rotation = date(2024, 1, 1) 
     rotation = (((date.today()+timedelta(day)) - current_rotation).days) % 15
     return rotation
 

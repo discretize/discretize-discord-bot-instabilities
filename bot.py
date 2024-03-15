@@ -65,6 +65,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         {"id": 17759, "label": "Arkk"},
         {"id": 23254, "label": "Light Ai"},
         {"id": 23254, "label": "Dark Ai"},
+        {"id": 25577, "label": "Kanaxai"},
     ]
     encounter_ids = list(map(lambda encounter: encounter["id"], encounter_order))
 
@@ -102,16 +103,20 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
             else:
                 return "Light Ai"
 
+    logs = []
     # find all dps.report urls in the message
     dps_report_urls = re.findall(r"https://dps\.report/[a-zA-Z-\d_]*", event.content)
-    logs = []
     for log_link in dps_report_urls:
         permalink = log_link.replace("https://dps.report/", "")
         if len(permalink) >= 5:
             url = f"https://dps.report/getJson?permalink={permalink}"
             req = requests.get(url)
             logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
-
+    # find all wingman urls in the message
+    for log_link in re.findall(r"https://gw2wingman\.nevermindcreations\.de/log/[a-zA-Z-\d_]*", event.content):
+        url = log_link.replace("https://gw2wingman.nevermindcreations.de/log/", "https://gw2wingman.nevermindcreations.de/api/getMetadata/")
+        req = requests.get(url)
+        logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
     logs.sort(key=get_order)
 
     # only do something if logs were found in the text

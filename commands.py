@@ -118,7 +118,7 @@ def filter_instabs(level, day):
 
 def send_instabilities(days=0):
     rotation_num = get_rotation(days) % 15
-    in_x = get_day_of_year() + days
+    in_x = get_day_of_year() + days - 1
     if in_x > 365 and calendar.isleap(date.today().year) == False:
         in_x %= 365
     elif in_x > 366 and calendar.isleap(date.today().year) == True:

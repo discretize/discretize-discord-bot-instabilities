@@ -43,4 +43,6 @@ spec_emojis = {
     ":stagingdTWeaver:": 970090737519698010,
     ":stagingdTWillbender:": 970090757505576992,
     ":stagingdTTempest:": 970090619382952016,
+    ":Kanaxai:": 1248256927419469846,
+    ":Eparch:": 1248264943682322503,
 }

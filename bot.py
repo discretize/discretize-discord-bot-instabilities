@@ -258,7 +258,7 @@ async def in_x(ctx):
 async def filter(ctx):
     filter_message = ""
     curr_date = date.today()
-    day = get_day_of_year() + 1
+    day = get_day_of_year()
     filter_message += f"Filtered instabilities for **{ctx.options.level}**:\n"
 
     if ctx.options.with_without == "with":

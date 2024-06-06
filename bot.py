@@ -66,6 +66,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         {"id": 23254, "label": "Light Ai"},
         {"id": 23254, "label": "Dark Ai"},
         {"id": 25577, "label": "Kanaxai"},
+        {"id": 26231, "label": "Eparch"},
     ]
     encounter_ids = list(map(lambda encounter: encounter["id"], encounter_order))
 

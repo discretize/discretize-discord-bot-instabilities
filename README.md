@@ -11,7 +11,7 @@ There are several commands available:
 
 Asides from providing the data when asked the bot will also notify every server that it has been added to. The broadcast happens at reset and is delivered in the `#instabilities` (mind the exact spelling) channel.
 
-![Example printout](https://cdn.discordapp.com/attachments/504607260316663813/894177872565129236/unknown.png)
+![Example printout](https://cdn.discordapp.com/attachments/1192509421675352194/1248252127281680475/image.png?ex=6662fce2&is=6661ab62&hm=cdb088b82dc1d532e1bde1742bc17ac56e35d2860060c7360bdd7c455f1b1a4d&)
 
 ## Adding the bot to your own discord server
 

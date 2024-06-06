@@ -17,7 +17,7 @@ with open("data.json", "r") as file:
 with open("mappings.json", "r") as file:
     fractal_data = json.load(file)
 
-cms = [8, 9, 20, 21]
+cms = [8, 9, 20, 21, 22]
 instablist = [
     "Adrenaline Rush",
     "Afflicted",

@@ -45,16 +45,12 @@ async def temporary_info(event: hikari.GuildMessageCreateEvent) -> None:
             )
 
 
-@bot.listen(hikari.GuildMessageCreateEvent)
-async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
-    if event.is_bot or not event.content:
-        return
-
-    if "!logs" not in event.content:
-        return
-
-    await event.get_channel().trigger_typing()
-
+@bot.command
+@lightbulb.option("logs", "Input the logs", type=str)
+@lightbulb.command("logs", "Formats the logs")
+@lightbulb.implements(lightbulb.SlashCommand)
+async def prettier_logs(ctx: lightbulb.SlashContext) -> None:
+    
     # order of the logs
     encounter_order = [
         {"id": 17021, "label": "MAMA"},
@@ -66,7 +62,8 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
         {"id": 23254, "label": "Light Ai"},
         {"id": 23254, "label": "Dark Ai"},
         {"id": 25577, "label": "Kanaxai"},
-        {"id": 26231, "label": "Eparch"},
+        #{"id": 26257, "label": "Cerus and Deimos"},
+        {"id": 26231, "label": "Eparch"}
     ]
     encounter_ids = list(map(lambda encounter: encounter["id"], encounter_order))
 
@@ -106,7 +103,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
 
     logs = []
     # find all dps.report urls in the message
-    dps_report_urls = re.findall(r"https://dps\.report/[a-zA-Z-\d_]*", event.content)
+    dps_report_urls = re.findall(r"https://dps\.report/[a-zA-Z-\d_]*", ctx.options.logs)
     for log_link in dps_report_urls:
         permalink = log_link.replace("https://dps.report/", "")
         if len(permalink) >= 5:
@@ -114,7 +111,7 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
             req = requests.get(url)
             logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
     # find all wingman urls in the message
-    for log_link in re.findall(r"https://gw2wingman\.nevermindcreations\.de/log/[a-zA-Z-\d_]*", event.content):
+    for log_link in re.findall(r"https://gw2wingman\.nevermindcreations\.de/log/[a-zA-Z-\d_]*", ctx.options.logs):
         url = log_link.replace("https://gw2wingman.nevermindcreations.de/log/", "https://gw2wingman.nevermindcreations.de/api/getMetadata/")
         req = requests.get(url)
         logs.append({"log_link": log_link, "log_content": json.loads(req.content)})
@@ -171,14 +168,17 @@ async def prettier_logs(event: hikari.GuildMessageCreateEvent) -> None:
             f':alarm_clock: {duration}\n:link: [Link]({log["log_link"]})',
             inline=True,
         )
+
+    if len(embed.fields[0].value) > 1024:
+        await ctx.respond("To many different players to display, please split the logs into multiple messages")
+
+    if len(embed.fields)> 25:
+        await ctx.respond("Too many logs to display, please split the logs into multiple messages")
+    
     try:
-        await event.message.delete()
+        await ctx.respond(embed)
     except Exception:
-        await event.get_channel().send("Requires permission to delete messages")
-    try:
-        await event.message.respond(embed)
-    except Exception:
-        await event.get_channel().send("Requires permission to embed messages")
+        await ctx.respond("Requires permission to embed messages")
 
 
 # Daily broadcast of daily fractals and their instabilities in #instabilities channel
